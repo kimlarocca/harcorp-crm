@@ -136,7 +136,7 @@
         </header>
 
         <div class="px-4 py-6 lg:px-8">
-          <template v-if="activeView === 'dashboard'">
+          <template v-if="activeView === 'onboarding'">
             <div class="space-y-6">
               <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 <StatCard
@@ -376,7 +376,6 @@
 import { computed, defineComponent, h, ref } from "vue"
 import {
   Building2,
-  LayoutDashboard,
   Briefcase,
   Users,
   Wrench,
@@ -404,7 +403,7 @@ import {
 const cx = (...classes) => classes.filter(Boolean).join(" ")
 
 const navItems = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "onboarding", label: "Onboarding", icon: UserPlus },
   { id: "pipeline", label: "Pipeline", icon: Briefcase },
   { id: "crm", label: "CRM", icon: Users },
   { id: "operations", label: "Operations", icon: Wrench },
@@ -741,7 +740,7 @@ const prompts = {
   },
 }
 
-const activeView = ref("dashboard")
+const activeView = ref("onboarding")
 const intakeOpen = ref(false)
 const intakePath = ref("service")
 const intakeSummary = ref("")
