@@ -20,8 +20,8 @@
               </div>
             </div>
             <div>
-              <p class="text-base font-semibold">Harcorp AI CRM</p>
-              <p class="text-xs text-slate-400">Operations workspace</p>
+              <p class="text-base font-semibold">Harcorp Facility Management</p>
+              <p class="text-xs text-slate-400">Property Operations Platform</p>
             </div>
           </div>
         </div>
@@ -31,7 +31,7 @@
             @click="intakeOpen = true"
             class="flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-950 shadow-sm transition hover:-translate-y-0.5"
           >
-            <Plus class="h-4 w-4" /> New AI Intake
+            <Plus class="h-4 w-4" /> New Work Order
           </button>
         </div>
 
@@ -61,16 +61,16 @@
             </p>
             <div class="mt-4 space-y-3 text-sm text-slate-200">
               <div class="flex items-center gap-3">
-                <Sparkles class="h-4 w-4" /> Intake Agent
+                <Sparkles class="h-4 w-4" /> Maintenance Agent
               </div>
               <div class="flex items-center gap-3">
-                <Shield class="h-4 w-4" /> Qualification Agent
+                <Shield class="h-4 w-4" /> Billing Agent
               </div>
               <div class="flex items-center gap-3">
-                <ArrowRight class="h-4 w-4" /> Workflow Router
+                <ArrowRight class="h-4 w-4" /> Scheduling Agent
               </div>
               <div class="flex items-center gap-3">
-                <Users class="h-4 w-4" /> Recruiting Agent
+                <Users class="h-4 w-4" /> Customer Service Agent
               </div>
             </div>
           </div>
@@ -136,32 +136,32 @@
         </header>
 
         <div class="px-4 py-6 lg:px-8">
-          <template v-if="activeView === 'onboarding'">
+          <template v-if="activeView === 'dashboard'">
             <div class="space-y-6">
               <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 <StatCard
-                  label="Open opportunities"
+                  label="Active Facilities"
+                  value="24"
+                  :icon="Building2"
+                  meta="3 under maintenance"
+                />
+                <StatCard
+                  label="Open Work Orders"
                   value="18"
-                  :icon="Briefcase"
-                  meta="6 require review this week"
-                />
-                <StatCard
-                  label="Open work orders"
-                  value="27"
                   :icon="Wrench"
-                  meta="4 urgent items in dispatch flow"
+                  meta="5 urgent, 13 routine"
                 />
                 <StatCard
-                  label="Recruit pipeline"
+                  label="Monthly Revenue"
+                  value="$47.2K"
+                  :icon="FileText"
+                  meta="12% increase from last month"
+                />
+                <StatCard
+                  label="Scheduled Tasks"
                   value="34"
-                  :icon="UserPlus"
-                  meta="5 interview-ready candidates"
-                />
-                <StatCard
-                  label="AI actions today"
-                  value="49"
-                  :icon="Bot"
-                  meta="7 low-confidence items need review"
+                  :icon="CalendarDays"
+                  meta="8 due today"
                 />
               </div>
 
@@ -170,15 +170,15 @@
                   class="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm"
                 >
                   <SectionHeader
-                    title="Pipeline snapshot"
-                    subtitle="Most recent sales and business development records"
+                    title="Facility Overview"
+                    subtitle="Current status of all managed properties"
                   >
                     <template #action>
                       <button
                         @click="intakeOpen = true"
                         class="rounded-2xl bg-slate-950 px-4 py-2 text-sm font-medium text-white"
                       >
-                        New Intake
+                        Add Facility
                       </button>
                     </template>
                   </SectionHeader>
@@ -196,131 +196,127 @@
 
               <div class="grid gap-6 xl:grid-cols-[1fr_1fr]">
                 <WorkOrdersCard :work-orders="workOrders" />
-                <TasksCard :tasks="myTasks" />
+                <MaintenanceHistoryCard :history="maintenanceHistory" />
               </div>
             </div>
           </template>
 
-          <template v-else-if="activeView === 'pipeline'">
+          <template v-else-if="activeView === 'facilities'">
             <div class="space-y-6">
               <SectionHeader
-                title="Sales pipeline board"
-                subtitle="Track leads, proposals, partnerships, and opportunities across visible stages"
+                title="Facility Management"
+                subtitle="Monitor and manage all properties in your portfolio"
               >
                 <template #action>
                   <button
                     @click="intakeOpen = true"
                     class="rounded-2xl bg-slate-950 px-4 py-2 text-sm font-medium text-white"
                   >
-                    Add opportunity
+                    Add Facility
                   </button>
                 </template>
               </SectionHeader>
-              <PipelineBoard :stages="salesStages" :leads="leads" />
+              <FacilitiesGrid :facilities="facilities" />
             </div>
           </template>
 
-          <template v-else-if="activeView === 'crm'">
+          <template v-else-if="activeView === 'maintenance'">
             <div class="space-y-6">
               <SectionHeader
-                title="CRM records"
-                subtitle="Organizations, contacts, and active relationships across Harcorp"
-              >
-                <template #action>
-                  <button
-                    class="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700"
-                  >
-                    <FileText class="h-4 w-4" /> Export
-                  </button>
-                </template>
-              </SectionHeader>
-              <TableCard :rows="crmRecords" />
-            </div>
-          </template>
-
-          <template v-else-if="activeView === 'operations'">
-            <div class="space-y-6">
-              <SectionHeader
-                title="Operations workspace"
-                subtitle="Dispatch queue, service requests, and work-order oversight"
+                title="Maintenance Management"
+                subtitle="Track work orders, preventive maintenance, and service history"
               >
                 <template #action>
                   <button
                     @click="intakeOpen = true"
                     class="rounded-2xl bg-slate-950 px-4 py-2 text-sm font-medium text-white"
                   >
-                    New work order
+                    New Work Order
                   </button>
                 </template>
               </SectionHeader>
-              <div class="grid gap-6 xl:grid-cols-[1fr_0.9fr]">
-                <WorkOrdersCard :work-orders="workOrders" />
-                <AiInboxCard :items="aiQueue" />
-              </div>
+              <MaintenanceBoard :workOrders="workOrders" :maintenanceHistory="maintenanceHistory" />
             </div>
           </template>
 
-          <template v-else-if="activeView === 'recruiting'">
+          <template v-else-if="activeView === 'billing'">
             <div class="space-y-6">
               <SectionHeader
-                title="Recruiting board"
-                subtitle="Agent recruitment funnel with AI pre-qualification and onboarding stages"
+                title="Billing & Invoices"
+                subtitle="Manage tenant billing, invoices, payments, and financial reporting"
               >
                 <template #action>
                   <button
-                    @click="intakeOpen = true"
-                    class="rounded-2xl bg-slate-950 px-4 py-2 text-sm font-medium text-white"
+                    class="inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-4 py-2 text-sm font-medium text-white"
                   >
-                    Add candidate
+                    <FileText class="h-4 w-4" /> Generate Invoice
                   </button>
                 </template>
               </SectionHeader>
-              <div class="grid gap-4 md:grid-cols-4">
-                <StatCard
-                  label="Total candidates"
-                  value="34"
-                  :icon="UserPlus"
-                  meta="12 added this month"
-                />
-                <StatCard
-                  label="Interview-ready"
-                  value="5"
-                  :icon="CalendarDays"
-                  meta="Need scheduling this week"
-                />
-                <StatCard
-                  label="Licensing path"
-                  value="9"
-                  :icon="Shield"
-                  meta="High-intent unlicensed prospects"
-                />
-                <StatCard
-                  label="Onboarding"
-                  value="4"
-                  :icon="CheckCircle2"
-                  meta="Training checklists in progress"
-                />
-              </div>
-              <RecruitingBoard :stages="recruitingStages" :recruits="recruits" />
+              <BillingDashboard :invoices="invoices" :payments="payments" />
+            </div>
+          </template>
+
+          <template v-else-if="activeView === 'scheduling'">
+            <div class="space-y-6">
+              <SectionHeader
+                title="Maintenance Scheduling"
+                subtitle="Schedule preventive maintenance, inspections, and service appointments"
+              >
+                <template #action>
+                  <button
+                    class="inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-4 py-2 text-sm font-medium text-white"
+                  >
+                    <CalendarDays class="h-4 w-4" /> Schedule Task
+                  </button>
+                </template>
+              </SectionHeader>
+              <SchedulingCalendar :scheduledTasks="scheduledTasks" />
+            </div>
+          </template>
+
+          <template v-else-if="activeView === 'portal'">
+            <div class="space-y-6">
+              <SectionHeader
+                title="Customer Portal"
+                subtitle="Tenant access, service requests, and communication hub"
+              >
+                <template #action>
+                  <button
+                    class="inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-4 py-2 text-sm font-medium text-white"
+                  >
+                    <Users class="h-4 w-4" /> Portal Settings
+                  </button>
+                </template>
+              </SectionHeader>
+              <CustomerPortal :tenants="tenants" :portalActivity="portalActivity" />
             </div>
           </template>
 
           <template v-else-if="activeView === 'ai'">
             <div class="space-y-6">
               <SectionHeader
-                title="AI Inbox + workflow review"
-                subtitle="Structured outputs from intake, qualification, and routing agents"
-              />
+                title="AI Assistant Hub"
+                subtitle="Intelligent agents helping with facility management workflows"
+              >
+                <template #action>
+                  <button
+                    class="inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-4 py-2 text-sm font-medium text-white"
+                  >
+                    <Bot class="h-4 w-4" /> Configure Agents
+                  </button>
+                </template>
+              </SectionHeader>
               <div class="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
                 <AiInboxCard :items="aiQueue" />
                 <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                   <SectionHeader
-                    title="Agent prompts"
-                    subtitle="Core prompts currently powering the workspace"
+                    title="Facility Management Agents"
+                    subtitle="AI-powered assistance for maintenance, billing, and operations"
                   />
                   <div class="space-y-4">
                     <div
-                      v-for="item in agentPrompts"
+                      v-for="item in facilityAgentPrompts"
                       :key="item.title"
                       class="rounded-2xl border border-slate-200 bg-slate-50 p-4"
                     >
@@ -376,6 +372,7 @@
 import { computed, defineComponent, h, ref } from "vue"
 import {
   Building2,
+  LayoutDashboard,
   Briefcase,
   Users,
   Wrench,
@@ -403,13 +400,13 @@ import {
 const cx = (...classes) => classes.filter(Boolean).join(" ")
 
 const navItems = [
-  { id: "onboarding", label: "Onboarding", icon: UserPlus },
-  { id: "pipeline", label: "Pipeline", icon: Briefcase },
-  { id: "crm", label: "CRM", icon: Users },
-  { id: "operations", label: "Operations", icon: Wrench },
-  { id: "recruiting", label: "Recruiting", icon: UserPlus },
-  { id: "ai", label: "AI Inbox", icon: Bot },
-  { id: "tasks", label: "Tasks", icon: ClipboardList },
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "facilities", label: "Facilities", icon: Building2 },
+  { id: "maintenance", label: "Maintenance", icon: Wrench },
+  { id: "billing", label: "Billing", icon: FileText },
+  { id: "scheduling", label: "Scheduling", icon: CalendarDays },
+  { id: "portal", label: "Customer Portal", icon: Users },
+  { id: "ai", label: "AI Assistant", icon: Bot },
 ]
 
 const salesStages = [
@@ -655,6 +652,73 @@ const myTasks = [
   },
 ]
 
+const maintenanceHistory = [
+  { id: "WO-2024-0456", title: "HVAC System Maintenance", facility: "Downtown Office", completed: "2 days ago", cost: "$2,450", technician: "Mike Johnson" },
+  { id: "WO-2024-0455", title: "Plumbing Repair - Floor 3", facility: "Medical Plaza", completed: "3 days ago", cost: "$890", technician: "Sarah Davis" },
+  { id: "WO-2024-0454", title: "Electrical Panel Upgrade", facility: "Warehouse A", completed: "1 week ago", cost: "$3,200", technician: "Tom Wilson" },
+  { id: "WO-2024-0453", title: "Roof Leak Repair", facility: "Retail Center", completed: "1 week ago", cost: "$1,150", technician: "Lisa Chen" },
+]
+
+const facilities = [
+  { id: "FAC-001", name: "Downtown Office Complex", address: "123 Main St, Downtown", status: "Active", type: "Office", sqFt: "50,000", tenants: 12, lastInspection: "2 weeks ago" },
+  { id: "FAC-002", name: "Medical Plaza", address: "456 Health Ave, Medical District", status: "Active", type: "Medical", sqFt: "75,000", tenants: 8, lastInspection: "1 week ago" },
+  { id: "FAC-003", name: "Warehouse A", address: "789 Industrial Blvd", status: "Maintenance", type: "Warehouse", sqFt: "100,000", tenants: 2, lastInspection: "3 days ago" },
+  { id: "FAC-004", name: "Retail Center", address: "321 Shopping Mall Dr", status: "Active", type: "Retail", sqFt: "40,000", tenants: 15, lastInspection: "1 month ago" },
+]
+
+const invoices = [
+  { id: "INV-2024-001", tenant: "TechCorp Inc", facility: "Downtown Office", amount: "$12,500", dueDate: "2024-04-15", status: "Paid", issued: "2024-03-15" },
+  { id: "INV-2024-002", tenant: "MediCare Plus", facility: "Medical Plaza", amount: "$8,750", dueDate: "2024-04-20", status: "Pending", issued: "2024-03-20" },
+  { id: "INV-2024-003", tenant: "Logistics Pro", facility: "Warehouse A", amount: "$15,200", dueDate: "2024-04-10", status: "Overdue", issued: "2024-03-10" },
+  { id: "INV-2024-004", tenant: "Retail Group", facility: "Retail Center", amount: "$6,800", dueDate: "2024-04-25", status: "Paid", issued: "2024-03-25" },
+]
+
+const payments = [
+  { id: "PAY-2024-001", tenant: "TechCorp Inc", amount: "$12,500", method: "ACH", date: "2024-04-10", invoice: "INV-2024-001" },
+  { id: "PAY-2024-002", tenant: "MediCare Plus", amount: "$4,375", method: "Check", date: "2024-04-12", invoice: "INV-2024-002" },
+  { id: "PAY-2024-003", tenant: "Retail Group", amount: "$6,800", method: "Wire", date: "2024-04-08", invoice: "INV-2024-004" },
+]
+
+const scheduledTasks = [
+  { id: "SCH-001", title: "HVAC Filter Replacement", facility: "Downtown Office", date: "2024-04-25", time: "9:00 AM", technician: "Mike Johnson", type: "Preventive" },
+  { id: "SCH-002", title: "Fire Alarm Inspection", facility: "Medical Plaza", date: "2024-04-26", time: "2:00 PM", technician: "Sarah Davis", type: "Inspection" },
+  { id: "SCH-003", title: "Elevator Maintenance", facility: "Retail Center", date: "2024-04-28", time: "8:00 AM", technician: "Tom Wilson", type: "Preventive" },
+  { id: "SCH-004", title: "Plumbing Check", facility: "Warehouse A", date: "2024-04-30", time: "10:00 AM", technician: "Lisa Chen", type: "Inspection" },
+]
+
+const tenants = [
+  { id: "TEN-001", name: "TechCorp Inc", facility: "Downtown Office", contact: "John Smith", email: "john@techcorp.com", portalAccess: true, lastLogin: "2 days ago" },
+  { id: "TEN-002", name: "MediCare Plus", facility: "Medical Plaza", contact: "Dr. Sarah Johnson", email: "sarah@medicare.com", portalAccess: true, lastLogin: "1 day ago" },
+  { id: "TEN-003", name: "Logistics Pro", facility: "Warehouse A", contact: "Mike Davis", email: "mike@logistics.com", portalAccess: false, lastLogin: "Never" },
+  { id: "TEN-004", name: "Retail Group", facility: "Retail Center", contact: "Lisa Chen", email: "lisa@retail.com", portalAccess: true, lastLogin: "5 hours ago" },
+]
+
+const portalActivity = [
+  { id: "ACT-001", tenant: "TechCorp Inc", action: "Submitted service request", details: "HVAC issue in Suite 1201", timestamp: "2 hours ago", status: "New" },
+  { id: "ACT-002", tenant: "MediCare Plus", action: "Viewed invoice", details: "Invoice INV-2024-002", timestamp: "4 hours ago", status: "Viewed" },
+  { id: "ACT-003", tenant: "Retail Group", action: "Updated contact info", details: "Changed phone number", timestamp: "1 day ago", status: "Completed" },
+  { id: "ACT-004", tenant: "TechCorp Inc", action: "Downloaded lease", details: "Lease agreement renewal", timestamp: "2 days ago", status: "Downloaded" },
+]
+
+const facilityAgentPrompts = [
+  {
+    title: "Maintenance Agent",
+    body: "Analyze maintenance requests, prioritize by urgency and impact, suggest optimal scheduling, and recommend preventive measures based on historical data.",
+  },
+  {
+    title: "Billing Agent",
+    body: "Generate accurate invoices, track payment status, send automated reminders, and provide financial reporting for facility operations.",
+  },
+  {
+    title: "Scheduling Agent",
+    body: "Optimize maintenance schedules, coordinate technician availability, minimize tenant disruption, and ensure compliance with regulatory requirements.",
+  },
+  {
+    title: "Customer Service Agent",
+    body: "Handle tenant inquiries, process service requests, provide status updates, and maintain communication through the customer portal.",
+  },
+]
+
 const agentPrompts = [
   {
     title: "Intake Agent",
@@ -740,7 +804,7 @@ const prompts = {
   },
 }
 
-const activeView = ref("onboarding")
+const activeView = ref("dashboard")
 const intakeOpen = ref(false)
 const intakePath = ref("service")
 const intakeSummary = ref("")
@@ -959,6 +1023,256 @@ const TasksCard = defineComponent({
             </div>
           </div>
           <PriorityBadge :value="task.priority" />
+        </div>
+      </div>
+    </div>
+  `,
+})
+
+const MaintenanceHistoryCard = defineComponent({
+  name: "MaintenanceHistoryCard",
+  components: { SectionHeader, CheckCircle2, Clock3 },
+  props: { history: { type: Array, required: true } },
+  template: `
+    <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+      <SectionHeader title="Maintenance History" subtitle="Recent completed work and service records" />
+      <div class="space-y-3">
+        <div v-for="item in history" :key="item.id" class="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 p-4">
+          <div class="flex items-start gap-3">
+            <CheckCircle2 class="mt-0.5 h-4 w-4 text-green-500" />
+            <div>
+              <p class="text-sm font-medium text-slate-900">{{ item.title }}</p>
+              <p class="mt-1 text-xs text-slate-500">{{ item.facility }} • {{ item.completed }}</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-sm font-medium text-slate-900">{{ item.cost }}</p>
+            <p class="text-xs text-slate-500">{{ item.technician }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  `,
+})
+
+const FacilitiesGrid = defineComponent({
+  name: "FacilitiesGrid",
+  components: { SectionHeader, Building2, MapPin },
+  props: { facilities: { type: Array, required: true } },
+  template: `
+    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div v-for="facility in facilities" :key="facility.id" class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex items-start gap-3">
+            <Building2 class="mt-1 h-5 w-5 text-slate-400" />
+            <div>
+              <p class="text-sm font-semibold text-slate-950">{{ facility.name }}</p>
+              <p class="mt-1 text-xs text-slate-500 flex items-center gap-1">
+                <MapPin class="h-3 w-3" />{{ facility.address }}
+              </p>
+            </div>
+          </div>
+          <span :class="facility.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'" class="rounded-full px-2.5 py-1 text-xs font-medium">
+            {{ facility.status }}
+          </span>
+        </div>
+        <div class="mt-4 grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <p class="text-slate-500">Type</p>
+            <p class="font-medium text-slate-900">{{ facility.type }}</p>
+          </div>
+          <div>
+            <p class="text-slate-500">Sq Ft</p>
+            <p class="font-medium text-slate-900">{{ facility.sqFt }}</p>
+          </div>
+          <div>
+            <p class="text-slate-500">Tenants</p>
+            <p class="font-medium text-slate-900">{{ facility.tenants }}</p>
+          </div>
+          <div>
+            <p class="text-slate-500">Last Inspection</p>
+            <p class="font-medium text-slate-900">{{ facility.lastInspection }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  `,
+})
+
+const MaintenanceBoard = defineComponent({
+  name: "MaintenanceBoard",
+  components: { SectionHeader, PriorityBadge, StagePill, Clock3, CheckCircle2 },
+  props: { workOrders: { type: Array, required: true }, maintenanceHistory: { type: Array, required: true } },
+  template: `
+    <div class="grid gap-6 xl:grid-cols-[1fr_1fr]">
+      <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+        <SectionHeader title="Active Work Orders" subtitle="Current maintenance and repair tasks" />
+        <div class="space-y-3">
+          <div v-for="wo in workOrders" :key="wo.id" class="rounded-2xl border border-slate-200 p-4">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <p class="text-sm font-semibold text-slate-950">{{ wo.id }} • {{ wo.client }}</p>
+                <p class="mt-1 text-xs text-slate-500">{{ wo.category }} • {{ wo.asset }}</p>
+              </div>
+              <PriorityBadge :value="wo.urgency" />
+            </div>
+            <div class="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-600">
+              <StagePill>{{ wo.status }}</StagePill>
+              <span class="inline-flex items-center gap-1"><Clock3 class="h-3.5 w-3.5" />{{ wo.sla }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+        <SectionHeader title="Recent Completions" subtitle="Completed maintenance work" />
+        <div class="space-y-3">
+          <div v-for="item in maintenanceHistory.slice(0, 4)" :key="item.id" class="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 p-4">
+            <div class="flex items-start gap-3">
+              <CheckCircle2 class="mt-0.5 h-4 w-4 text-green-500" />
+              <div>
+                <p class="text-sm font-medium text-slate-900">{{ item.title }}</p>
+                <p class="mt-1 text-xs text-slate-500">{{ item.facility }} • {{ item.completed }}</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="text-sm font-medium text-slate-900">{{ item.cost }}</p>
+              <p class="text-xs text-slate-500">{{ item.technician }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `,
+})
+
+const BillingDashboard = defineComponent({
+  name: "BillingDashboard",
+  components: { SectionHeader, FileText, CheckCircle2, Clock3 },
+  props: { invoices: { type: Array, required: true }, payments: { type: Array, required: true } },
+  template: `
+    <div class="grid gap-6 xl:grid-cols-[1fr_1fr]">
+      <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+        <SectionHeader title="Recent Invoices" subtitle="Outstanding and recent billing" />
+        <div class="space-y-3">
+          <div v-for="invoice in invoices" :key="invoice.id" class="rounded-2xl border border-slate-200 p-4">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <p class="text-sm font-semibold text-slate-950">{{ invoice.id }} • {{ invoice.tenant }}</p>
+                <p class="mt-1 text-xs text-slate-500">{{ invoice.facility }} • Issued {{ invoice.issued }}</p>
+              </div>
+              <span :class="invoice.status === 'Paid' ? 'bg-green-100 text-green-700' : invoice.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'" class="rounded-full px-2.5 py-1 text-xs font-medium">
+                {{ invoice.status }}
+              </span>
+            </div>
+            <div class="mt-3 flex items-center justify-between">
+              <div class="text-sm">
+                <p class="font-medium text-slate-900">{{ invoice.amount }}</p>
+                <p class="text-slate-500">Due {{ invoice.dueDate }}</p>
+              </div>
+              <FileText class="h-4 w-4 text-slate-400" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+        <SectionHeader title="Payment History" subtitle="Recent payments received" />
+        <div class="space-y-3">
+          <div v-for="payment in payments" :key="payment.id" class="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 p-4">
+            <div class="flex items-start gap-3">
+              <CheckCircle2 class="mt-0.5 h-4 w-4 text-green-500" />
+              <div>
+                <p class="text-sm font-medium text-slate-900">{{ payment.tenant }}</p>
+                <p class="mt-1 text-xs text-slate-500">{{ payment.method }} • {{ payment.date }}</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="text-sm font-medium text-slate-900">{{ payment.amount }}</p>
+              <p class="text-xs text-slate-500">{{ payment.invoice }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `,
+})
+
+const SchedulingCalendar = defineComponent({
+  name: "SchedulingCalendar",
+  components: { SectionHeader, CalendarDays, Clock3 },
+  props: { scheduledTasks: { type: Array, required: true } },
+  template: `
+    <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+      <SectionHeader title="Upcoming Schedule" subtitle="Scheduled maintenance and inspections" />
+      <div class="space-y-4">
+        <div v-for="task in scheduledTasks" :key="task.id" class="rounded-2xl border border-slate-200 p-4">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-start gap-3">
+              <CalendarDays class="mt-1 h-5 w-5 text-slate-400" />
+              <div>
+                <p class="text-sm font-semibold text-slate-950">{{ task.title }}</p>
+                <p class="mt-1 text-xs text-slate-500">{{ task.facility }}</p>
+                <div class="mt-2 flex items-center gap-4 text-xs text-slate-600">
+                  <span class="inline-flex items-center gap-1">
+                    <Clock3 class="h-3.5 w-3.5" />{{ task.date }} at {{ task.time }}
+                  </span>
+                  <span class="font-medium">{{ task.technician }}</span>
+                </div>
+              </div>
+            </div>
+            <span :class="task.type === 'Preventive' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'" class="rounded-full px-2.5 py-1 text-xs font-medium">
+              {{ task.type }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `,
+})
+
+const CustomerPortal = defineComponent({
+  name: "CustomerPortal",
+  components: { SectionHeader, Users, CheckCircle2, Clock3 },
+  props: { tenants: { type: Array, required: true }, portalActivity: { type: Array, required: true } },
+  template: `
+    <div class="grid gap-6 xl:grid-cols-[1fr_1fr]">
+      <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+        <SectionHeader title="Tenant Directory" subtitle="Portal access and contact information" />
+        <div class="space-y-3">
+          <div v-for="tenant in tenants" :key="tenant.id" class="rounded-2xl border border-slate-200 p-4">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <p class="text-sm font-semibold text-slate-950">{{ tenant.name }}</p>
+                <p class="mt-1 text-xs text-slate-500">{{ tenant.facility }} • {{ tenant.contact }}</p>
+                <p class="text-xs text-slate-500">{{ tenant.email }}</p>
+              </div>
+              <div class="text-right">
+                <span :class="tenant.portalAccess ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'" class="rounded-full px-2.5 py-1 text-xs font-medium mb-2 block">
+                  {{ tenant.portalAccess ? 'Active' : 'Inactive' }}
+                </span>
+                <p class="text-xs text-slate-500">Last login: {{ tenant.lastLogin }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+        <SectionHeader title="Portal Activity" subtitle="Recent tenant interactions and requests" />
+        <div class="space-y-3">
+          <div v-for="activity in portalActivity" :key="activity.id" class="rounded-2xl border border-slate-200 p-4">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <p class="text-sm font-semibold text-slate-950">{{ activity.tenant }}</p>
+                <p class="mt-1 text-xs text-slate-600">{{ activity.action }}</p>
+                <p class="text-xs text-slate-500">{{ activity.details }}</p>
+              </div>
+              <div class="text-right">
+                <span :class="activity.status === 'New' ? 'bg-blue-100 text-blue-700' : activity.status === 'Viewed' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'" class="rounded-full px-2.5 py-1 text-xs font-medium mb-2 block">
+                  {{ activity.status }}
+                </span>
+                <p class="text-xs text-slate-500">{{ activity.timestamp }}</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
