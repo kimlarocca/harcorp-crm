@@ -316,7 +316,7 @@
                   />
                   <div class="space-y-4">
                     <div
-                      v-for="item in facilityAgentPrompts"
+                      v-for="item in projectAgentPrompts"
                       :key="item.title"
                       class="rounded-2xl border border-slate-200 bg-slate-50 p-4"
                     >
@@ -700,7 +700,7 @@ const portalActivity = [
   { id: "ACT-004", tenant: "TechCorp Inc", action: "Downloaded lease", details: "Lease agreement renewal", timestamp: "2 days ago", status: "Downloaded" },
 ]
 
-const facilityAgentPrompts = [
+const projectAgentPrompts = [
   {
     title: "Maintenance Agent",
     body: "Analyze maintenance requests, prioritize by urgency and impact, suggest optimal scheduling, and recommend preventive measures based on historical data.",
