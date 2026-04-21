@@ -28,10 +28,10 @@
 
         <div class="px-4 py-5">
           <button
-            @click="intakeOpen = true"
+            @click="createNewProject"
             class="flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-950 shadow-sm transition hover:-translate-y-0.5"
           >
-            <Plus class="h-4 w-4" /> New Work Order
+            <Plus class="h-4 w-4" /> New Project
           </button>
         </div>
 
@@ -659,12 +659,28 @@ const maintenanceHistory = [
   { id: "WO-2024-0453", title: "Roof Leak Repair", project: "Retail Center", completed: "1 week ago", cost: "$1,150", technician: "Lisa Chen" },
 ]
 
-const projects = [
+const projects = ref([
   { id: "FAC-001", name: "Downtown Office Complex", address: "123 Main St, Downtown", status: "Active", type: "Office", sqFt: "50,000", tenants: 12, lastInspection: "2 weeks ago" },
   { id: "FAC-002", name: "Medical Plaza", address: "456 Health Ave, Medical District", status: "Active", type: "Medical", sqFt: "75,000", tenants: 8, lastInspection: "1 week ago" },
   { id: "FAC-003", name: "Warehouse A", address: "789 Industrial Blvd", status: "Maintenance", type: "Warehouse", sqFt: "100,000", tenants: 2, lastInspection: "3 days ago" },
   { id: "FAC-004", name: "Retail Center", address: "321 Shopping Mall Dr", status: "Active", type: "Retail", sqFt: "40,000", tenants: 15, lastInspection: "1 month ago" },
-]
+])
+
+const createNewProject = () => {
+  const newId = `PROJ-${String(projects.value.length + 1).padStart(3, '0')}`
+  const newProject = {
+    id: newId,
+    name: `New Project ${projects.value.length + 1}`,
+    address: "Address TBD",
+    status: "Active",
+    type: "Office",
+    sqFt: "0",
+    tenants: 0,
+    lastInspection: "Never"
+  }
+  projects.value.push(newProject)
+  activeView.value = 'projects'
+}
 
 const invoices = [
   { id: "INV-2024-001", tenant: "TechCorp Inc", project: "Downtown Office", amount: "$12,500", dueDate: "2024-04-15", status: "Paid", issued: "2024-03-15" },
