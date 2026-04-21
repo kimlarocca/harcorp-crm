@@ -402,6 +402,24 @@
             </div>
           </template>
 
+          <template v-else-if="activeView === 'follow-up'">
+            <div class="space-y-6">
+              <SectionHeader
+                title="Follow-Up Assistant"
+                subtitle="Track inactive tasks and manage follow-ups"
+              >
+                <template #action>
+                  <button
+                    class="inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-4 py-2 text-sm font-medium text-white"
+                  >
+                    <Filter class="h-4 w-4" /> Filter Tasks
+                  </button>
+                </template>
+              </SectionHeader>
+              <FollowUpDashboard :workOrders="workOrders" :scheduledTasks="scheduledTasks" />
+            </div>
+          </template>
+
           <template v-else-if="activeView === 'billing'">
             <div class="space-y-6">
               <SectionHeader
@@ -567,6 +585,7 @@ const navItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "projects", label: "Projects", icon: Building2 },
   { id: "maintenance", label: "Maintenance", icon: Wrench },
+  { id: "follow-up", label: "Follow-Up", icon: ClipboardList },
   { id: "billing", label: "Billing", icon: FileText },
   { id: "scheduling", label: "Scheduling", icon: CalendarDays },
   { id: "portal", label: "Customer Portal", icon: Users },
@@ -706,6 +725,8 @@ const workOrders = [
     urgency: "Emergency",
     sla: "Due in 2h",
     asset: "Ice machine - kitchen wing",
+    lastActivity: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
+    assignee: "John Smith"
   },
   {
     id: "HC23-2896",
@@ -715,6 +736,8 @@ const workOrders = [
     urgency: "Standard",
     sla: "Due tomorrow",
     asset: "Boiler inspection",
+    lastActivity: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(), // 48 hours ago
+    assignee: "Sarah Davis"
   },
   {
     id: "HC23-2898",
@@ -724,6 +747,8 @@ const workOrders = [
     urgency: "High",
     sla: "On track",
     asset: "Steam kettle diagnosis",
+    lastActivity: new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString(), // 72 hours ago
+    assignee: "Mike Johnson"
   },
 ]
 
@@ -931,10 +956,10 @@ const payments = [
 ]
 
 const scheduledTasks = [
-  { id: "SCH-001", title: "HVAC Filter Replacement", project: "Downtown Office", date: "2024-04-25", time: "9:00 AM", technician: "Mike Johnson", type: "Preventive" },
-  { id: "SCH-002", title: "Fire Alarm Inspection", project: "Medical Plaza", date: "2024-04-26", time: "2:00 PM", technician: "Sarah Davis", type: "Inspection" },
-  { id: "SCH-003", title: "Elevator Maintenance", project: "Retail Center", date: "2024-04-28", time: "8:00 AM", technician: "Tom Wilson", type: "Preventive" },
-  { id: "SCH-004", title: "Plumbing Check", project: "Warehouse A", date: "2024-04-30", time: "10:00 AM", technician: "Lisa Chen", type: "Inspection" },
+  { id: "SCH-001", title: "HVAC Filter Replacement", project: "Downtown Office", date: "2024-04-25", time: "9:00 AM", technician: "Mike Johnson", type: "Preventive", lastActivity: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), assignee: "Mike Johnson" },
+  { id: "SCH-002", title: "Fire Alarm Inspection", project: "Medical Plaza", date: "2024-04-26", time: "2:00 PM", technician: "Sarah Davis", type: "Inspection", lastActivity: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(), assignee: "Sarah Davis" },
+  { id: "SCH-003", title: "Elevator Maintenance", project: "Retail Center", date: "2024-04-28", time: "8:00 AM", technician: "Tom Wilson", type: "Preventive", lastActivity: new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString(), assignee: "Tom Wilson" },
+  { id: "SCH-004", title: "Plumbing Check", project: "Warehouse A", date: "2024-04-30", time: "10:00 AM", technician: "Lisa Chen", type: "Inspection", lastActivity: new Date(Date.now() - 5 * 60 * 1000).toISOString(), assignee: "Lisa Chen" },
 ]
 
 const tenants = [
@@ -1365,6 +1390,151 @@ const ProjectsGrid = defineComponent({
           <div v-if="project.contactNumber" class="flex items-center gap-2">
             <span class="text-slate-500">Phone:</span>
             <a :href="'tel:' + project.contactNumber" class="text-blue-600 hover:text-blue-800">{{ project.contactNumber }}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  `,
+})
+
+const FollowUpDashboard = defineComponent({
+  name: "FollowUpDashboard",
+  components: { SectionHeader, Clock3, AlertCircle: Sparkles, CheckCircle2 },
+  props: { workOrders: { type: Array, required: true }, scheduledTasks: { type: Array, required: true } },
+  setup(props) {
+    const calculateHoursSinceActivity = (lastActivityIso) => {
+      const lastActivity = new Date(lastActivityIso)
+      const now = new Date()
+      return Math.floor((now - lastActivity) / (1000 * 60 * 60))
+    }
+
+    const getInactivityStage = (hours) => {
+      if (hours < 24) return "24h"
+      if (hours < 48) return "48h"
+      return "72h+"
+    }
+
+    const allTasks = computed(() => {
+      const tasks = []
+      
+      props.workOrders.forEach(wo => {
+        tasks.push({
+          ...wo,
+          type: "Work Order",
+          hoursInactive: calculateHoursSinceActivity(wo.lastActivity),
+          stage: getInactivityStage(calculateHoursSinceActivity(wo.lastActivity))
+        })
+      })
+      
+      props.scheduledTasks.forEach(task => {
+        tasks.push({
+          ...task,
+          type: "Scheduled Task",
+          hoursInactive: calculateHoursSinceActivity(task.lastActivity),
+          stage: getInactivityStage(calculateHoursSinceActivity(task.lastActivity)),
+          client: task.project
+        })
+      })
+      
+      return tasks.sort((a, b) => b.hoursInactive - a.hoursInactive)
+    })
+
+    const tasksByStage = computed(() => ({
+      "24h": allTasks.value.filter(t => t.stage === "24h"),
+      "48h": allTasks.value.filter(t => t.stage === "48h"),
+      "72h+": allTasks.value.filter(t => t.stage === "72h+")
+    }))
+
+    const stageConfig = {
+      "24h": { color: "bg-blue-50", badge: "bg-blue-100 text-blue-700", icon: "text-blue-600", description: "Light nudge - just getting started" },
+      "48h": { color: "bg-yellow-50", badge: "bg-yellow-100 text-yellow-700", icon: "text-yellow-600", description: "Increase urgency - prepare external touchpoint" },
+      "72h+": { color: "bg-red-50", badge: "bg-red-100 text-red-700", icon: "text-red-600", description: "Stalled - immediate action needed" }
+    }
+
+    const formatHours = (hours) => {
+      if (hours < 24) return `${hours}h ago`
+      if (hours < 48) return `${Math.floor(hours / 24)}d ago`
+      return `${Math.floor(hours / 24)}d ago`
+    }
+
+    return {
+      allTasks,
+      tasksByStage,
+      stageConfig,
+      formatHours,
+      calculateHoursSinceActivity
+    }
+  },
+  template: `
+    <div class="space-y-6">
+      <!-- Follow-Up Status Overview -->
+      <div class="grid gap-4 md:grid-cols-3">
+        <div class="rounded-lg bg-blue-50 border border-blue-200 p-4">
+          <div class="flex items-center gap-2 mb-2">
+            <Clock3 class="h-5 w-5 text-blue-600" />
+            <span class="text-sm font-medium text-blue-900">24h Stage</span>
+          </div>
+          <p class="text-3xl font-bold text-blue-900">{{ tasksByStage['24h'].length }}</p>
+          <p class="text-xs text-blue-700 mt-1">Light nudges</p>
+        </div>
+        <div class="rounded-lg bg-yellow-50 border border-yellow-200 p-4">
+          <div class="flex items-center gap-2 mb-2">
+            <Clock3 class="h-5 w-5 text-yellow-600" />
+            <span class="text-sm font-medium text-yellow-900">48h Stage</span>
+          </div>
+          <p class="text-3xl font-bold text-yellow-900">{{ tasksByStage['48h'].length }}</p>
+          <p class="text-xs text-yellow-700 mt-1">Stronger reminders</p>
+        </div>
+        <div class="rounded-lg bg-red-50 border border-red-200 p-4">
+          <div class="flex items-center gap-2 mb-2">
+            <Sparkles class="h-5 w-5 text-red-600" />
+            <span class="text-sm font-medium text-red-900">72h+ Stage</span>
+          </div>
+          <p class="text-3xl font-bold text-red-900">{{ tasksByStage['72h+'].length }}</p>
+          <p class="text-xs text-red-700 mt-1">Stalled items</p>
+        </div>
+      </div>
+
+      <!-- Tasks by Stage -->
+      <div class="space-y-6">
+        <div v-for="stage in ['24h', '48h', '72h+']" :key="stage" class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div class="mb-4">
+            <h3 class="text-lg font-semibold text-slate-900">{{ stage }} Follow-Up Stage</h3>
+            <p class="text-sm text-slate-600 mt-1">{{ stageConfig[stage].description }}</p>
+          </div>
+          
+          <div v-if="tasksByStage[stage].length === 0" class="text-center py-8">
+            <CheckCircle2 class="h-8 w-8 text-green-500 mx-auto mb-2" />
+            <p class="text-sm text-slate-600">No tasks in this stage</p>
+          </div>
+
+          <div v-else class="space-y-3">
+            <div v-for="task in tasksByStage[stage]" :key="task.id" 
+                 :class="[stageConfig[stage].color, 'rounded-lg border border-slate-200 p-4']">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-1">
+                    <p class="font-semibold text-slate-900">{{ task.id }}</p>
+                    <span :class="stageConfig[stage].badge" class="rounded-full px-2 py-0.5 text-xs font-medium">
+                      {{ stage }}
+                    </span>
+                  </div>
+                  <p class="text-sm text-slate-700 font-medium">{{ task.title || task.asset || task.category }}</p>
+                  <p class="text-xs text-slate-600 mt-1">
+                    {{ task.client }} • {{ task.type }}
+                  </p>
+                  <div class="flex items-center gap-4 mt-2 text-xs text-slate-600">
+                    <span>Last activity: {{ formatHours(task.hoursInactive) }}</span>
+                    <span>Assigned to: {{ task.assignee || task.technician }}</span>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div :class="[stageConfig[stage].badge, 'rounded-lg px-3 py-2 text-xs font-medium']">
+                    {{ task.urgency || task.type }}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
