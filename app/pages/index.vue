@@ -141,27 +141,27 @@
               <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 <StatCard
                   label="Active Projects"
-                  value="24"
+                  :value="projects.filter(p => p.status === 'Active').length.toString()"
                   :icon="Building2"
-                  meta="3 under maintenance"
+                  :meta="`${projects.filter(p => p.status === 'Maintenance').length} under maintenance`"
                 />
                 <StatCard
                   label="Open Work Orders"
-                  value="18"
+                  :value="workOrders.length.toString()"
                   :icon="Wrench"
-                  meta="5 urgent, 13 routine"
+                  :meta="`${workOrders.filter(wo => wo.urgency === 'Emergency').length} urgent, ${workOrders.filter(wo => wo.urgency !== 'Emergency').length} routine`"
                 />
                 <StatCard
                   label="Monthly Revenue"
-                  value="$47.2K"
+                  :value="`$${invoices.filter(inv => inv.status === 'Paid').reduce((sum, inv) => sum + parseFloat(inv.amount.replace(/[$,]/g, '')), 0).toLocaleString()}`"
                   :icon="FileText"
-                  meta="12% increase from last month"
+                  :meta="`${invoices.filter(inv => inv.status === 'Paid').length} invoices paid`"
                 />
                 <StatCard
                   label="Scheduled Tasks"
-                  value="34"
+                  :value="scheduledTasks.length.toString()"
                   :icon="CalendarDays"
-                  meta="8 due today"
+                  :meta="`${scheduledTasks.filter(task => new Date(task.date).toDateString() === new Date().toDateString()).length} due today`"
                 />
               </div>
 
@@ -170,33 +170,196 @@
                   class="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm"
                 >
                   <SectionHeader
-                    title="Project Overview"
-                    subtitle="Current status of all managed properties"
+                    title="Project Summary"
+                    subtitle="Overview of all managed properties"
                   >
                     <template #action>
                       <button
-                        @click="intakeOpen = true"
+                        @click="createNewProject"
                         class="rounded-2xl bg-slate-950 px-4 py-2 text-sm font-medium text-white"
                       >
                         Add Project
                       </button>
                     </template>
                   </SectionHeader>
-                  <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                    <LeadCard
-                      v-for="lead in leads.slice(0, 3)"
-                      :key="lead.id"
-                      :lead="lead"
-                    />
+                  <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                      <div class="rounded-lg bg-blue-50 p-4">
+                        <div class="flex items-center gap-2">
+                          <Building2 class="h-5 w-5 text-blue-600" />
+                          <span class="text-sm font-medium text-blue-900">Active Projects</span>
+                        </div>
+                        <p class="mt-2 text-2xl font-bold text-blue-900">{{ projects.filter(p => p.status === 'Active').length }}</p>
+                      </div>
+                      <div class="rounded-lg bg-yellow-50 p-4">
+                        <div class="flex items-center gap-2">
+                          <Wrench class="h-5 w-5 text-yellow-600" />
+                          <span class="text-sm font-medium text-yellow-900">Under Maintenance</span>
+                        </div>
+                        <p class="mt-2 text-2xl font-bold text-yellow-900">{{ projects.filter(p => p.status === 'Maintenance').length }}</p>
+                      </div>
+                    </div>
+                    <div class="space-y-2">
+                      <h4 class="text-sm font-medium text-slate-900">Recent Projects</h4>
+                      <div class="space-y-2">
+                        <div v-for="project in projects.slice(0, 3)" :key="project.id" 
+                             class="flex items-center justify-between rounded-lg border border-slate-200 p-3">
+                          <div>
+                            <p class="text-sm font-medium text-slate-900">{{ project.name }}</p>
+                            <p class="text-xs text-slate-500">{{ project.address }}</p>
+                          </div>
+                          <span :class="project.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'" 
+                                class="rounded-full px-2 py-1 text-xs font-medium">
+                            {{ project.status }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <AiInboxCard :items="aiQueue" />
+                <div class="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+                  <SectionHeader
+                    title="Scheduled Tasks"
+                    subtitle="Upcoming maintenance and inspections"
+                  />
+                  <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                      <div class="rounded-lg bg-green-50 p-4">
+                        <div class="flex items-center gap-2">
+                          <CalendarDays class="h-5 w-5 text-green-600" />
+                          <span class="text-sm font-medium text-green-900">Total Tasks</span>
+                        </div>
+                        <p class="mt-2 text-2xl font-bold text-green-900">{{ scheduledTasks.length }}</p>
+                      </div>
+                      <div class="rounded-lg bg-orange-50 p-4">
+                        <div class="flex items-center gap-2">
+                          <Clock3 class="h-5 w-5 text-orange-600" />
+                          <span class="text-sm font-medium text-orange-900">Due Today</span>
+                        </div>
+                        <p class="mt-2 text-2xl font-bold text-orange-900">
+                          {{ scheduledTasks.filter(task => new Date(task.date).toDateString() === new Date().toDateString()).length }}
+                        </p>
+                      </div>
+                    </div>
+                    <div class="space-y-2">
+                      <h4 class="text-sm font-medium text-slate-900">Upcoming Tasks</h4>
+                      <div class="space-y-2">
+                        <div v-for="task in scheduledTasks.slice(0, 3)" :key="task.id" 
+                             class="flex items-center justify-between rounded-lg border border-slate-200 p-3">
+                          <div>
+                            <p class="text-sm font-medium text-slate-900">{{ task.title }}</p>
+                            <p class="text-xs text-slate-500">{{ task.date }} at {{ task.time }}</p>
+                          </div>
+                          <span :class="task.type === 'Preventive' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'" 
+                                class="rounded-full px-2 py-1 text-xs font-medium">
+                            {{ task.type }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div class="grid gap-6 xl:grid-cols-[1fr_1fr]">
-                <WorkOrdersCard :work-orders="workOrders" />
-                <MaintenanceHistoryCard :history="maintenanceHistory" />
+                <div class="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+                  <SectionHeader
+                    title="Work Orders Summary"
+                    subtitle="Current maintenance and repair tasks"
+                  />
+                  <div class="space-y-4">
+                    <div class="grid grid-cols-3 gap-4">
+                      <div class="rounded-lg bg-red-50 p-4">
+                        <span class="text-sm font-medium text-red-900">Emergency</span>
+                        <p class="mt-2 text-2xl font-bold text-red-900">
+                          {{ workOrders.filter(wo => wo.urgency === 'Emergency').length }}
+                        </p>
+                      </div>
+                      <div class="rounded-lg bg-orange-50 p-4">
+                        <span class="text-sm font-medium text-orange-900">High Priority</span>
+                        <p class="mt-2 text-2xl font-bold text-orange-900">
+                          {{ workOrders.filter(wo => wo.urgency === 'High').length }}
+                        </p>
+                      </div>
+                      <div class="rounded-lg bg-blue-50 p-4">
+                        <span class="text-sm font-medium text-blue-900">Standard</span>
+                        <p class="mt-2 text-2xl font-bold text-blue-900">
+                          {{ workOrders.filter(wo => wo.urgency === 'Standard').length }}
+                        </p>
+                      </div>
+                    </div>
+                    <div class="space-y-2">
+                      <h4 class="text-sm font-medium text-slate-900">Recent Work Orders</h4>
+                      <div class="space-y-2">
+                        <div v-for="wo in workOrders.slice(0, 3)" :key="wo.id" 
+                             class="flex items-center justify-between rounded-lg border border-slate-200 p-3">
+                          <div>
+                            <p class="text-sm font-medium text-slate-900">{{ wo.id }}</p>
+                            <p class="text-xs text-slate-500">{{ wo.client }} • {{ wo.category }}</p>
+                          </div>
+                          <span :class="wo.urgency === 'Emergency' ? 'bg-red-100 text-red-700' : wo.urgency === 'High' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'" 
+                                class="rounded-full px-2 py-1 text-xs font-medium">
+                            {{ wo.urgency }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+                  <SectionHeader
+                    title="Billing Overview"
+                    subtitle="Invoice status and payment tracking"
+                  />
+                  <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                      <div class="rounded-lg bg-green-50 p-4">
+                        <div class="flex items-center gap-2">
+                          <FileText class="h-5 w-5 text-green-600" />
+                          <span class="text-sm font-medium text-green-900">Paid Invoices</span>
+                        </div>
+                        <p class="mt-2 text-2xl font-bold text-green-900">
+                          {{ invoices.filter(inv => inv.status === 'Paid').length }}
+                        </p>
+                      </div>
+                      <div class="rounded-lg bg-yellow-50 p-4">
+                        <div class="flex items-center gap-2">
+                          <Clock3 class="h-5 w-5 text-yellow-600" />
+                          <span class="text-sm font-medium text-yellow-900">Pending</span>
+                        </div>
+                        <p class="mt-2 text-2xl font-bold text-yellow-900">
+                          {{ invoices.filter(inv => inv.status === 'Pending').length }}
+                        </p>
+                      </div>
+                    </div>
+                    <div class="space-y-2">
+                      <h4 class="text-sm font-medium text-slate-900">Recent Invoices</h4>
+                      <div class="space-y-2">
+                        <div v-for="invoice in invoices.slice(0, 3)" :key="invoice.id" 
+                             class="flex items-center justify-between rounded-lg border border-slate-200 p-3">
+                          <div>
+                            <p class="text-sm font-medium text-slate-900">{{ invoice.id }}</p>
+                            <p class="text-xs text-slate-500">{{ invoice.tenant }} • {{ invoice.amount }}</p>
+                          </div>
+                          <span :class="invoice.status === 'Paid' ? 'bg-green-100 text-green-700' : invoice.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'" 
+                                class="rounded-full px-2 py-1 text-xs font-medium">
+                            {{ invoice.status }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="pt-4 border-t border-slate-200">
+                      <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium text-slate-900">Monthly Revenue</span>
+                        <span class="text-lg font-bold text-slate-900">
+                          ${{ invoices.filter(inv => inv.status === 'Paid').reduce((sum, inv) => sum + parseFloat(inv.amount.replace(/[$,]/g, '')), 0).toLocaleString() }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </template>
