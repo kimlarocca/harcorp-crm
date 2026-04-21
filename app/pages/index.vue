@@ -1544,42 +1544,195 @@ const FollowUpDashboard = defineComponent({
 
 const MaintenanceBoard = defineComponent({
   name: "MaintenanceBoard",
-  components: { SectionHeader, PriorityBadge, StagePill, Clock3, CheckCircle2 },
+  components: { SectionHeader, PriorityBadge, StagePill, Clock3, CheckCircle2, AlertCircle: Sparkles, Wrench, CalendarDays },
   props: { workOrders: { type: Array, required: true }, maintenanceHistory: { type: Array, required: true } },
+  setup(props) {
+    // Maintenance Agent Logic
+    const checkSLACompliance = (workOrder) => {
+      const slaText = workOrder.sla.toLowerCase()
+      const urgency = workOrder.urgency.toLowerCase()
+      
+      if (urgency === 'emergency' && slaText.includes('2h')) {
+        return { compliant: true, status: 'On Track', message: 'Emergency SLA met' }
+      }
+      if (urgency === 'high' && slaText.includes('today')) {
+        return { compliant: true, status: 'On Track', message: 'High priority SLA met' }
+      }
+      if (urgency === 'standard' && slaText.includes('tomorrow')) {
+        return { compliant: true, status: 'On Track', message: 'Standard SLA met' }
+      }
+      return { compliant: false, status: 'At Risk', message: 'SLA deadline approaching' }
+    }
+
+    const checkScheduleConflicts = (workOrders) => {
+      const conflicts = []
+      const technicianSchedule = {}
+      
+      workOrders.forEach(wo => {
+        if (!technicianSchedule[wo.assignee]) {
+          technicianSchedule[wo.assignee] = []
+        }
+        technicianSchedule[wo.assignee].push(wo)
+      })
+      
+      Object.entries(technicianSchedule).forEach(([technician, tasks]) => {
+        if (tasks.length > 1) {
+          conflicts.push({
+            technician,
+            tasks: tasks.map(t => t.id),
+            issue: 'Multiple assignments detected'
+          })
+        }
+      })
+      
+      return conflicts
+    }
+
+    const generateWorkOrder = (workOrder) => {
+      return `WO-${workOrder.client.replace(/\s+/g, '-').toUpperCase()}-${workOrder.asset.replace(/\s+/g, '-').toUpperCase()}-${workOrder.id}`
+    }
+
+    const slaStatus = computed(() => 
+      props.workOrders.map(wo => ({
+        ...wo,
+        slaCheck: checkSLACompliance(wo)
+      }))
+    )
+
+    const scheduleConflicts = computed(() => checkScheduleConflicts(props.workOrders))
+
+    const workOrderRecommendations = computed(() => 
+      props.workOrders.map(wo => ({
+        ...wo,
+        workOrderId: generateWorkOrder(wo),
+        recommendations: [
+          wo.status === 'Ready for Dispatch' ? 'Parts and tools verified - ready to dispatch' : 'Verify parts availability before dispatch',
+          wo.slaCheck?.status === 'At Risk' ? 'SLA deadline approaching - prioritize scheduling' : 'SLA compliant',
+          scheduleConflicts.value.some(c => c.tasks.includes(wo.id)) ? 'Schedule conflict detected - coordinate with technician' : 'No scheduling conflicts'
+        ].filter(Boolean)
+      }))
+    )
+
+    return {
+      slaStatus,
+      scheduleConflicts,
+      workOrderRecommendations,
+      checkSLACompliance
+    }
+  },
   template: `
-    <div class="grid gap-6 xl:grid-cols-[1fr_1fr]">
+    <div class="space-y-6">
+      <!-- Maintenance Agent Overview -->
       <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-        <SectionHeader title="Active Work Orders" subtitle="Current maintenance and repair tasks" />
-        <div class="space-y-3">
-          <div v-for="wo in workOrders" :key="wo.id" class="rounded-2xl border border-slate-200 p-4">
-            <div class="flex items-start justify-between gap-3">
-              <div>
-                <p class="text-sm font-semibold text-slate-950">{{ wo.id }} • {{ wo.client }}</p>
-                <p class="mt-1 text-xs text-slate-500">{{ wo.category }} • {{ wo.asset }}</p>
-              </div>
-              <PriorityBadge :value="wo.urgency" />
+        <SectionHeader title="Maintenance Agent Dashboard" subtitle="AI-powered coordination and dispatch" />
+        <div class="grid gap-4 md:grid-cols-3">
+          <div class="rounded-lg bg-green-50 p-4">
+            <div class="flex items-center gap-2">
+              <CheckCircle2 class="h-5 w-5 text-green-600" />
+              <span class="text-sm font-medium text-green-900">SLA Compliant</span>
             </div>
-            <div class="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-600">
-              <StagePill>{{ wo.status }}</StagePill>
-              <span class="inline-flex items-center gap-1"><Clock3 class="h-3.5 w-3.5" />{{ wo.sla }}</span>
+            <p class="mt-2 text-2xl font-bold text-green-900">
+              {{ slaStatus.filter(s => s.slaCheck.compliant).length }}
+            </p>
+          </div>
+          <div class="rounded-lg bg-yellow-50 p-4">
+            <div class="flex items-center gap-2">
+              <Clock3 class="h-5 w-5 text-yellow-600" />
+              <span class="text-sm font-medium text-yellow-900">At Risk</span>
             </div>
+            <p class="mt-2 text-2xl font-bold text-yellow-900">
+              {{ slaStatus.filter(s => !s.slaCheck.compliant).length }}
+            </p>
+          </div>
+          <div class="rounded-lg bg-red-50 p-4">
+            <div class="flex items-center gap-2">
+              <AlertCircle class="h-5 w-5 text-red-600" />
+              <span class="text-sm font-medium text-red-900">Conflicts</span>
+            </div>
+            <p class="mt-2 text-2xl font-bold text-red-900">{{ scheduleConflicts.length }}</p>
           </div>
         </div>
       </div>
-      <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-        <SectionHeader title="Recent Completions" subtitle="Completed maintenance work" />
-        <div class="space-y-3">
-          <div v-for="item in maintenanceHistory.slice(0, 4)" :key="item.id" class="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 p-4">
-            <div class="flex items-start gap-3">
-              <CheckCircle2 class="mt-0.5 h-4 w-4 text-green-500" />
-              <div>
-                <p class="text-sm font-medium text-slate-900">{{ item.title }}</p>
-                <p class="mt-1 text-xs text-slate-500">{{ item.project }} • {{ item.completed }}</p>
+
+      <!-- Schedule Conflicts Alert -->
+      <div v-if="scheduleConflicts.length > 0" class="rounded-3xl border border-red-200 bg-red-50 p-5">
+        <div class="flex items-start gap-3">
+          <AlertCircle class="h-5 w-5 text-red-600 mt-0.5" />
+          <div>
+            <h3 class="text-sm font-semibold text-red-900">Schedule Conflicts Detected</h3>
+            <div class="mt-2 space-y-1">
+              <div v-for="conflict in scheduleConflicts" :key="conflict.technician" class="text-sm text-red-800">
+                <strong>{{ conflict.technician }}</strong>: {{ conflict.tasks.join(', ') }} - {{ conflict.issue }}
               </div>
             </div>
-            <div class="text-right">
-              <p class="text-sm font-medium text-slate-900">{{ item.cost }}</p>
-              <p class="text-xs text-slate-500">{{ item.technician }}</p>
+            <p class="mt-3 text-sm text-red-700">
+              <strong>Recommendation:</strong> Reassign tasks or adjust schedules to avoid technician overload.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid gap-6 xl:grid-cols-[1fr_1fr]">
+        <!-- Active Work Orders with AI Recommendations -->
+        <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <SectionHeader title="Active Work Orders" subtitle="AI-coordinated maintenance tasks" />
+          <div class="space-y-4">
+            <div v-for="wo in workOrderRecommendations" :key="wo.id" class="rounded-2xl border border-slate-200 p-4">
+              <div class="flex items-start justify-between gap-3 mb-3">
+                <div>
+                  <p class="text-sm font-semibold text-slate-950">{{ wo.id }} • {{ wo.client }}</p>
+                  <p class="mt-1 text-xs text-slate-500">{{ wo.category }} • {{ wo.asset }}</p>
+                  <p class="mt-1 text-xs text-slate-600">Assigned: {{ wo.assignee }}</p>
+                </div>
+                <div class="text-right">
+                  <PriorityBadge :value="wo.urgency" />
+                  <div :class="wo.slaCheck.compliant ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'" 
+                       class="mt-2 rounded-full px-2 py-1 text-xs font-medium">
+                    SLA: {{ wo.slaCheck.status }}
+                  </div>
+                </div>
+              </div>
+              
+              <div class="flex flex-wrap items-center gap-2 text-xs text-slate-600 mb-3">
+                <StagePill>{{ wo.status }}</StagePill>
+                <span class="inline-flex items-center gap-1"><Clock3 class="h-3.5 w-3.5" />{{ wo.sla }}</span>
+                <span class="inline-flex items-center gap-1"><Wrench class="h-3.5 w-3.5" />WO: {{ wo.workOrderId }}</span>
+              </div>
+
+              <!-- AI Recommendations -->
+              <div v-if="wo.recommendations.length > 0" class="bg-blue-50 rounded-lg p-3">
+                <div class="flex items-start gap-2">
+                  <Sparkles class="h-4 w-4 text-blue-600 mt-0.5" />
+                  <div>
+                    <p class="text-xs font-medium text-blue-900 mb-1">Maintenance Agent Recommendations:</p>
+                    <ul class="text-xs text-blue-800 space-y-1">
+                      <li v-for="rec in wo.recommendations" :key="rec" class="flex items-start gap-1">
+                        <span>•</span> {{ rec }}
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Completions -->
+        <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <SectionHeader title="Recent Completions" subtitle="Completed maintenance work" />
+          <div class="space-y-3">
+            <div v-for="item in maintenanceHistory.slice(0, 4)" :key="item.id" class="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 p-4">
+              <div class="flex items-start gap-3">
+                <CheckCircle2 class="mt-0.5 h-4 w-4 text-green-500" />
+                <div>
+                  <p class="text-sm font-medium text-slate-900">{{ item.title }}</p>
+                  <p class="mt-1 text-xs text-slate-500">{{ item.project }} • {{ item.completed }}</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <p class="text-sm font-medium text-slate-900">{{ item.cost }}</p>
+                <p class="text-xs text-slate-500">{{ item.technician }}</p>
+              </div>
             </div>
           </div>
         </div>
