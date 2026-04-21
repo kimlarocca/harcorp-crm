@@ -393,6 +393,7 @@ import {
   Sparkles,
   CalendarDays,
   ChevronRight,
+  ChevronLeft,
   X,
   Wand2,
 } from "lucide-vue-next"
@@ -660,10 +661,74 @@ const maintenanceHistory = [
 ]
 
 const projects = ref([
-  { id: "FAC-001", name: "Downtown Office Complex", address: "123 Main St, Downtown", status: "Active", type: "Office", sqFt: "50,000", tenants: 12, lastInspection: "2 weeks ago" },
-  { id: "FAC-002", name: "Medical Plaza", address: "456 Health Ave, Medical District", status: "Active", type: "Medical", sqFt: "75,000", tenants: 8, lastInspection: "1 week ago" },
-  { id: "FAC-003", name: "Warehouse A", address: "789 Industrial Blvd", status: "Maintenance", type: "Warehouse", sqFt: "100,000", tenants: 2, lastInspection: "3 days ago" },
-  { id: "FAC-004", name: "Retail Center", address: "321 Shopping Mall Dr", status: "Active", type: "Retail", sqFt: "40,000", tenants: 15, lastInspection: "1 month ago" },
+  { 
+    id: "FAC-001", 
+    name: "Downtown Office Complex", 
+    address: "123 Main St, Downtown", 
+    status: "Active", 
+    type: "Office", 
+    sqFt: "50,000", 
+    tenants: 12, 
+    lastInspection: "2 weeks ago",
+    date: "2024-01-15",
+    website: "https://downtownoffice.com",
+    cost: "$2,500,000",
+    contactName: "John Smith",
+    contactNumber: "(555) 123-4567",
+    contactEmail: "john@techcorp.com",
+    source: "Direct"
+  },
+  { 
+    id: "FAC-002", 
+    name: "Medical Plaza", 
+    address: "456 Health Ave, Medical District", 
+    status: "Active", 
+    type: "Medical", 
+    sqFt: "75,000", 
+    tenants: 8, 
+    lastInspection: "1 week ago",
+    date: "2024-02-20",
+    website: "https://medicalplaza.com",
+    cost: "$4,200,000",
+    contactName: "Dr. Sarah Johnson",
+    contactNumber: "(555) 234-5678",
+    contactEmail: "sarah@medicare.com",
+    source: "Referral"
+  },
+  { 
+    id: "FAC-003", 
+    name: "Warehouse A", 
+    address: "789 Industrial Blvd", 
+    status: "Maintenance", 
+    type: "Warehouse", 
+    sqFt: "100,000", 
+    tenants: 2, 
+    lastInspection: "3 days ago",
+    date: "2024-03-10",
+    website: "https://warehouse-a.com",
+    cost: "$1,800,000",
+    contactName: "Mike Davis",
+    contactNumber: "(555) 345-6789",
+    contactEmail: "mike@logistics.com",
+    source: "Online"
+  },
+  { 
+    id: "FAC-004", 
+    name: "Retail Center", 
+    address: "321 Shopping Mall Dr", 
+    status: "Active", 
+    type: "Retail", 
+    sqFt: "40,000", 
+    tenants: 15, 
+    lastInspection: "1 month ago",
+    date: "2024-04-05",
+    website: "https://retailcenter.com",
+    cost: "$3,100,000",
+    contactName: "Lisa Chen",
+    contactNumber: "(555) 456-7890",
+    contactEmail: "lisa@retail.com",
+    source: "Partnership"
+  },
 ])
 
 const createNewProject = () => {
@@ -676,7 +741,14 @@ const createNewProject = () => {
     type: "Office",
     sqFt: "0",
     tenants: 0,
-    lastInspection: "Never"
+    lastInspection: "Never",
+    date: new Date().toISOString().split('T')[0], // Today's date in YYYY-MM-DD format
+    website: "",
+    cost: "$0",
+    contactName: "",
+    contactNumber: "",
+    contactEmail: "",
+    source: "Direct"
   }
   projects.value.push(newProject)
   activeView.value = 'projects'
@@ -1102,12 +1174,34 @@ const ProjectsGrid = defineComponent({
             <p class="font-medium text-slate-900">{{ project.sqFt }}</p>
           </div>
           <div>
-            <p class="text-slate-500">Tenants</p>
-            <p class="font-medium text-slate-900">{{ project.tenants }}</p>
+            <p class="text-slate-500">Cost</p>
+            <p class="font-medium text-slate-900">{{ project.cost }}</p>
           </div>
           <div>
-            <p class="text-slate-500">Last Inspection</p>
-            <p class="font-medium text-slate-900">{{ project.lastInspection }}</p>
+            <p class="text-slate-500">Date</p>
+            <p class="font-medium text-slate-900">{{ project.date }}</p>
+          </div>
+          <div>
+            <p class="text-slate-500">Contact</p>
+            <p class="font-medium text-slate-900">{{ project.contactName }}</p>
+          </div>
+          <div>
+            <p class="text-slate-500">Source</p>
+            <p class="font-medium text-slate-900">{{ project.source }}</p>
+          </div>
+        </div>
+        <div class="mt-4 space-y-2 text-xs">
+          <div v-if="project.website" class="flex items-center gap-2">
+            <span class="text-slate-500">Website:</span>
+            <a :href="project.website" target="_blank" class="text-blue-600 hover:text-blue-800">{{ project.website }}</a>
+          </div>
+          <div v-if="project.contactEmail" class="flex items-center gap-2">
+            <span class="text-slate-500">Email:</span>
+            <a :href="'mailto:' + project.contactEmail" class="text-blue-600 hover:text-blue-800">{{ project.contactEmail }}</a>
+          </div>
+          <div v-if="project.contactNumber" class="flex items-center gap-2">
+            <span class="text-slate-500">Phone:</span>
+            <a :href="'tel:' + project.contactNumber" class="text-blue-600 hover:text-blue-800">{{ project.contactNumber }}</a>
           </div>
         </div>
       </div>
@@ -1214,30 +1308,172 @@ const BillingDashboard = defineComponent({
 
 const SchedulingCalendar = defineComponent({
   name: "SchedulingCalendar",
-  components: { SectionHeader, CalendarDays, Clock3 },
+  components: { SectionHeader, CalendarDays, Clock3, ChevronRight, ChevronLeft },
   props: { scheduledTasks: { type: Array, required: true } },
+  setup() {
+    const currentDate = ref(new Date())
+    const selectedDate = ref(null)
+    
+    const currentMonth = computed(() => {
+      return currentDate.value.toLocaleString('default', { month: 'long', year: 'numeric' })
+    })
+    
+    const calendarDays = computed(() => {
+      const year = currentDate.value.getFullYear()
+      const month = currentDate.value.getMonth()
+      
+      const firstDay = new Date(year, month, 1)
+      const lastDay = new Date(year, month + 1, 0)
+      const startDate = new Date(firstDay)
+      startDate.setDate(startDate.getDate() - firstDay.getDay())
+      
+      const days = []
+      const current = new Date(startDate)
+      
+      for (let i = 0; i < 42; i++) {
+        const dayTasks = scheduledTasks.value.filter(task => {
+          const taskDate = new Date(task.date)
+          return taskDate.toDateString() === current.toDateString()
+        })
+        
+        days.push({
+          date: new Date(current),
+          isCurrentMonth: current.getMonth() === month,
+          tasks: dayTasks,
+          isToday: current.toDateString() === new Date().toDateString()
+        })
+        
+        current.setDate(current.getDate() + 1)
+      }
+      
+      return days
+    })
+    
+    const previousMonth = () => {
+      currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() - 1, 1)
+    }
+    
+    const nextMonth = () => {
+      currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 1)
+    }
+    
+    const syncGoogleCalendar = () => {
+      // Placeholder for Google Calendar sync
+      alert('Google Calendar sync functionality would be implemented here')
+    }
+    
+    const syncOutlookCalendar = () => {
+      // Placeholder for Outlook Calendar sync
+      alert('Outlook Calendar sync functionality would be implemented here')
+    }
+    
+    return {
+      currentDate,
+      selectedDate,
+      currentMonth,
+      calendarDays,
+      previousMonth,
+      nextMonth,
+      syncGoogleCalendar,
+      syncOutlookCalendar
+    }
+  },
   template: `
-    <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-      <SectionHeader title="Upcoming Schedule" subtitle="Scheduled maintenance and inspections" />
-      <div class="space-y-4">
-        <div v-for="task in scheduledTasks" :key="task.id" class="rounded-2xl border border-slate-200 p-4">
-          <div class="flex items-start justify-between gap-3">
-            <div class="flex items-start gap-3">
-              <CalendarDays class="mt-1 h-5 w-5 text-slate-400" />
-              <div>
-                <p class="text-sm font-semibold text-slate-950">{{ task.title }}</p>
-                <p class="mt-1 text-xs text-slate-500">{{ task.project }}</p>
-                <div class="mt-2 flex items-center gap-4 text-xs text-slate-600">
-                  <span class="inline-flex items-center gap-1">
-                    <Clock3 class="h-3.5 w-3.5" />{{ task.date }} at {{ task.time }}
-                  </span>
-                  <span class="font-medium">{{ task.technician }}</span>
-                </div>
+    <div class="space-y-6">
+      <!-- Calendar Sync Options -->
+      <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+        <SectionHeader title="Calendar Integration" subtitle="Sync with external calendars" />
+        <div class="flex flex-wrap gap-3">
+          <button 
+            @click="syncGoogleCalendar"
+            class="inline-flex items-center gap-2 rounded-2xl bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition"
+          >
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Sync Google Calendar
+          </button>
+          <button 
+            @click="syncOutlookCalendar"
+            class="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition"
+          >
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M21.3 14.7l-2.3-2.3c-.1-.1-.2-.1-.3 0l-4.7 4.7c-.1.1-.1.2 0 .3l2.3 2.3c.1.1.2.1.3 0l4.7-4.7c.1-.1.1-.2 0-.3z"/>
+              <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1 15l-4-4 1.4-1.4 2.6 2.6 6.6-6.6L17 6l-6 6z"/>
+            </svg>
+            Sync Outlook Calendar
+          </button>
+        </div>
+      </div>
+      
+      <!-- Calendar View -->
+      <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-6">
+          <SectionHeader title="Calendar View" subtitle="Monthly schedule overview" />
+          <div class="flex items-center gap-2">
+            <button @click="previousMonth" class="p-2 rounded-lg hover:bg-slate-100">
+              <ChevronLeft class="h-5 w-5" />
+            </button>
+            <h3 class="text-lg font-semibold text-slate-900">{{ currentMonth }}</h3>
+            <button @click="nextMonth" class="p-2 rounded-lg hover:bg-slate-100">
+              <ChevronRight class="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+        
+        <!-- Calendar Grid -->
+        <div class="grid grid-cols-7 gap-1 mb-4">
+          <div v-for="day in ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']" :key="day" 
+               class="p-3 text-center text-sm font-medium text-slate-500">
+            {{ day }}
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-7 gap-1">
+          <div v-for="day in calendarDays" :key="day.date.toISOString()"
+               :class="[
+                 'min-h-[100px] p-2 border border-slate-200 rounded-lg',
+                 day.isCurrentMonth ? 'bg-white' : 'bg-slate-50 text-slate-400',
+                 day.isToday ? 'ring-2 ring-blue-500' : ''
+               ]">
+            <div class="text-sm font-medium mb-1">{{ day.date.getDate() }}</div>
+            <div class="space-y-1">
+              <div v-for="task in day.tasks.slice(0, 2)" :key="task.id"
+                   :class="[
+                     'text-xs p-1 rounded text-white',
+                     task.type === 'Preventive' ? 'bg-blue-500' : 'bg-purple-500'
+                   ]">
+                {{ task.title.length > 15 ? task.title.substring(0, 15) + '...' : task.title }}
+              </div>
+              <div v-if="day.tasks.length > 2" class="text-xs text-slate-500">
+                +{{ day.tasks.length - 2 }} more
               </div>
             </div>
-            <span :class="task.type === 'Preventive' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'" class="rounded-full px-2.5 py-1 text-xs font-medium">
-              {{ task.type }}
-            </span>
+          </div>
+        </div>
+        
+        <!-- Task Details -->
+        <div v-if="selectedDate" class="mt-6 p-4 bg-slate-50 rounded-lg">
+          <h4 class="font-medium text-slate-900 mb-2">Tasks for {{ selectedDate.toDateString() }}</h4>
+          <div v-if="scheduledTasks.filter(task => new Date(task.date).toDateString() === selectedDate.toDateString()).length === 0" 
+               class="text-sm text-slate-500">
+            No tasks scheduled
+          </div>
+          <div v-else class="space-y-2">
+            <div v-for="task in scheduledTasks.filter(task => new Date(task.date).toDateString() === selectedDate.toDateString())" 
+                 :key="task.id" class="flex items-center justify-between p-2 bg-white rounded border">
+              <div>
+                <p class="text-sm font-medium">{{ task.title }}</p>
+                <p class="text-xs text-slate-500">{{ task.time }} • {{ task.technician }}</p>
+              </div>
+              <span :class="task.type === 'Preventive' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'" 
+                    class="px-2 py-1 text-xs rounded-full">
+                {{ task.type }}
+              </span>
+            </div>
           </div>
         </div>
       </div>
