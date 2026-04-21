@@ -653,10 +653,10 @@ const myTasks = [
 ]
 
 const maintenanceHistory = [
-  { id: "WO-2024-0456", title: "HVAC System Maintenance", facility: "Downtown Office", completed: "2 days ago", cost: "$2,450", technician: "Mike Johnson" },
-  { id: "WO-2024-0455", title: "Plumbing Repair - Floor 3", facility: "Medical Plaza", completed: "3 days ago", cost: "$890", technician: "Sarah Davis" },
-  { id: "WO-2024-0454", title: "Electrical Panel Upgrade", facility: "Warehouse A", completed: "1 week ago", cost: "$3,200", technician: "Tom Wilson" },
-  { id: "WO-2024-0453", title: "Roof Leak Repair", facility: "Retail Center", completed: "1 week ago", cost: "$1,150", technician: "Lisa Chen" },
+  { id: "WO-2024-0456", title: "HVAC System Maintenance", project: "Downtown Office", completed: "2 days ago", cost: "$2,450", technician: "Mike Johnson" },
+  { id: "WO-2024-0455", title: "Plumbing Repair - Floor 3", project: "Medical Plaza", completed: "3 days ago", cost: "$890", technician: "Sarah Davis" },
+  { id: "WO-2024-0454", title: "Electrical Panel Upgrade", project: "Warehouse A", completed: "1 week ago", cost: "$3,200", technician: "Tom Wilson" },
+  { id: "WO-2024-0453", title: "Roof Leak Repair", project: "Retail Center", completed: "1 week ago", cost: "$1,150", technician: "Lisa Chen" },
 ]
 
 const projects = [
@@ -667,10 +667,10 @@ const projects = [
 ]
 
 const invoices = [
-  { id: "INV-2024-001", tenant: "TechCorp Inc", facility: "Downtown Office", amount: "$12,500", dueDate: "2024-04-15", status: "Paid", issued: "2024-03-15" },
-  { id: "INV-2024-002", tenant: "MediCare Plus", facility: "Medical Plaza", amount: "$8,750", dueDate: "2024-04-20", status: "Pending", issued: "2024-03-20" },
-  { id: "INV-2024-003", tenant: "Logistics Pro", facility: "Warehouse A", amount: "$15,200", dueDate: "2024-04-10", status: "Overdue", issued: "2024-03-10" },
-  { id: "INV-2024-004", tenant: "Retail Group", facility: "Retail Center", amount: "$6,800", dueDate: "2024-04-25", status: "Paid", issued: "2024-03-25" },
+  { id: "INV-2024-001", tenant: "TechCorp Inc", project: "Downtown Office", amount: "$12,500", dueDate: "2024-04-15", status: "Paid", issued: "2024-03-15" },
+  { id: "INV-2024-002", tenant: "MediCare Plus", project: "Medical Plaza", amount: "$8,750", dueDate: "2024-04-20", status: "Pending", issued: "2024-03-20" },
+  { id: "INV-2024-003", tenant: "Logistics Pro", project: "Warehouse A", amount: "$15,200", dueDate: "2024-04-10", status: "Overdue", issued: "2024-03-10" },
+  { id: "INV-2024-004", tenant: "Retail Group", project: "Retail Center", amount: "$6,800", dueDate: "2024-04-25", status: "Paid", issued: "2024-03-25" },
 ]
 
 const payments = [
@@ -680,17 +680,17 @@ const payments = [
 ]
 
 const scheduledTasks = [
-  { id: "SCH-001", title: "HVAC Filter Replacement", facility: "Downtown Office", date: "2024-04-25", time: "9:00 AM", technician: "Mike Johnson", type: "Preventive" },
-  { id: "SCH-002", title: "Fire Alarm Inspection", facility: "Medical Plaza", date: "2024-04-26", time: "2:00 PM", technician: "Sarah Davis", type: "Inspection" },
-  { id: "SCH-003", title: "Elevator Maintenance", facility: "Retail Center", date: "2024-04-28", time: "8:00 AM", technician: "Tom Wilson", type: "Preventive" },
-  { id: "SCH-004", title: "Plumbing Check", facility: "Warehouse A", date: "2024-04-30", time: "10:00 AM", technician: "Lisa Chen", type: "Inspection" },
+  { id: "SCH-001", title: "HVAC Filter Replacement", project: "Downtown Office", date: "2024-04-25", time: "9:00 AM", technician: "Mike Johnson", type: "Preventive" },
+  { id: "SCH-002", title: "Fire Alarm Inspection", project: "Medical Plaza", date: "2024-04-26", time: "2:00 PM", technician: "Sarah Davis", type: "Inspection" },
+  { id: "SCH-003", title: "Elevator Maintenance", project: "Retail Center", date: "2024-04-28", time: "8:00 AM", technician: "Tom Wilson", type: "Preventive" },
+  { id: "SCH-004", title: "Plumbing Check", project: "Warehouse A", date: "2024-04-30", time: "10:00 AM", technician: "Lisa Chen", type: "Inspection" },
 ]
 
 const tenants = [
-  { id: "TEN-001", name: "TechCorp Inc", facility: "Downtown Office", contact: "John Smith", email: "john@techcorp.com", portalAccess: true, lastLogin: "2 days ago" },
-  { id: "TEN-002", name: "MediCare Plus", facility: "Medical Plaza", contact: "Dr. Sarah Johnson", email: "sarah@medicare.com", portalAccess: true, lastLogin: "1 day ago" },
-  { id: "TEN-003", name: "Logistics Pro", facility: "Warehouse A", contact: "Mike Davis", email: "mike@logistics.com", portalAccess: false, lastLogin: "Never" },
-  { id: "TEN-004", name: "Retail Group", facility: "Retail Center", contact: "Lisa Chen", email: "lisa@retail.com", portalAccess: true, lastLogin: "5 hours ago" },
+  { id: "TEN-001", name: "TechCorp Inc", project: "Downtown Office", contact: "John Smith", email: "john@techcorp.com", portalAccess: true, lastLogin: "2 days ago" },
+  { id: "TEN-002", name: "MediCare Plus", project: "Medical Plaza", contact: "Dr. Sarah Johnson", email: "sarah@medicare.com", portalAccess: true, lastLogin: "1 day ago" },
+  { id: "TEN-003", name: "Logistics Pro", project: "Warehouse A", contact: "Mike Davis", email: "mike@logistics.com", portalAccess: false, lastLogin: "Never" },
+  { id: "TEN-004", name: "Retail Group", project: "Retail Center", contact: "Lisa Chen", email: "lisa@retail.com", portalAccess: true, lastLogin: "5 hours ago" },
 ]
 
 const portalActivity = [
@@ -707,7 +707,7 @@ const projectAgentPrompts = [
   },
   {
     title: "Billing Agent",
-    body: "Generate accurate invoices, track payment status, send automated reminders, and provide financial reporting for facility operations.",
+    body: "Generate accurate invoices, track payment status, send automated reminders, and provide financial reporting for project operations.",
   },
   {
     title: "Scheduling Agent",
@@ -1042,7 +1042,7 @@ const MaintenanceHistoryCard = defineComponent({
             <CheckCircle2 class="mt-0.5 h-4 w-4 text-green-500" />
             <div>
               <p class="text-sm font-medium text-slate-900">{{ item.title }}</p>
-              <p class="mt-1 text-xs text-slate-500">{{ item.facility }} • {{ item.completed }}</p>
+              <p class="mt-1 text-xs text-slate-500">{{ item.project }} • {{ item.completed }}</p>
             </div>
           </div>
           <div class="text-right">
@@ -1131,7 +1131,7 @@ const MaintenanceBoard = defineComponent({
               <CheckCircle2 class="mt-0.5 h-4 w-4 text-green-500" />
               <div>
                 <p class="text-sm font-medium text-slate-900">{{ item.title }}</p>
-                <p class="mt-1 text-xs text-slate-500">{{ item.facility }} • {{ item.completed }}</p>
+                <p class="mt-1 text-xs text-slate-500">{{ item.project }} • {{ item.completed }}</p>
               </div>
             </div>
             <div class="text-right">
@@ -1158,7 +1158,7 @@ const BillingDashboard = defineComponent({
             <div class="flex items-start justify-between gap-3">
               <div>
                 <p class="text-sm font-semibold text-slate-950">{{ invoice.id }} • {{ invoice.tenant }}</p>
-                <p class="mt-1 text-xs text-slate-500">{{ invoice.facility }} • Issued {{ invoice.issued }}</p>
+                <p class="mt-1 text-xs text-slate-500">{{ invoice.project }} • Issued {{ invoice.issued }}</p>
               </div>
               <span :class="invoice.status === 'Paid' ? 'bg-green-100 text-green-700' : invoice.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'" class="rounded-full px-2.5 py-1 text-xs font-medium">
                 {{ invoice.status }}
@@ -1210,7 +1210,7 @@ const SchedulingCalendar = defineComponent({
               <CalendarDays class="mt-1 h-5 w-5 text-slate-400" />
               <div>
                 <p class="text-sm font-semibold text-slate-950">{{ task.title }}</p>
-                <p class="mt-1 text-xs text-slate-500">{{ task.facility }}</p>
+                <p class="mt-1 text-xs text-slate-500">{{ task.project }}</p>
                 <div class="mt-2 flex items-center gap-4 text-xs text-slate-600">
                   <span class="inline-flex items-center gap-1">
                     <Clock3 class="h-3.5 w-3.5" />{{ task.date }} at {{ task.time }}
@@ -1242,7 +1242,7 @@ const CustomerPortal = defineComponent({
             <div class="flex items-start justify-between gap-3">
               <div>
                 <p class="text-sm font-semibold text-slate-950">{{ tenant.name }}</p>
-                <p class="mt-1 text-xs text-slate-500">{{ tenant.facility }} • {{ tenant.contact }}</p>
+                <p class="mt-1 text-xs text-slate-500">{{ tenant.project }} • {{ tenant.contact }}</p>
                 <p class="text-xs text-slate-500">{{ tenant.email }}</p>
               </div>
               <div class="text-right">
