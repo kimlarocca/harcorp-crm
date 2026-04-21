@@ -20,7 +20,7 @@
               </div>
             </div>
             <div>
-              <p class="text-base font-semibold">Harcorp Facility Management</p>
+              <p class="text-base font-semibold">Harcorp Project Management</p>
               <p class="text-xs text-slate-400">Property Operations Platform</p>
             </div>
           </div>
@@ -140,7 +140,7 @@
             <div class="space-y-6">
               <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 <StatCard
-                  label="Active Facilities"
+                  label="Active Projects"
                   value="24"
                   :icon="Building2"
                   meta="3 under maintenance"
@@ -170,7 +170,7 @@
                   class="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm"
                 >
                   <SectionHeader
-                    title="Facility Overview"
+                    title="Project Overview"
                     subtitle="Current status of all managed properties"
                   >
                     <template #action>
@@ -178,7 +178,7 @@
                         @click="intakeOpen = true"
                         class="rounded-2xl bg-slate-950 px-4 py-2 text-sm font-medium text-white"
                       >
-                        Add Facility
+                        Add Project
                       </button>
                     </template>
                   </SectionHeader>
@@ -201,10 +201,10 @@
             </div>
           </template>
 
-          <template v-else-if="activeView === 'facilities'">
+          <template v-else-if="activeView === 'projects'">
             <div class="space-y-6">
               <SectionHeader
-                title="Facility Management"
+                title="Project Management"
                 subtitle="Monitor and manage all properties in your portfolio"
               >
                 <template #action>
@@ -212,11 +212,11 @@
                     @click="intakeOpen = true"
                     class="rounded-2xl bg-slate-950 px-4 py-2 text-sm font-medium text-white"
                   >
-                    Add Facility
+                    Add Project
                   </button>
                 </template>
               </SectionHeader>
-              <FacilitiesGrid :facilities="facilities" />
+              <ProjectsGrid :projects="projects" />
             </div>
           </template>
 
@@ -297,7 +297,7 @@
             <div class="space-y-6">
               <SectionHeader
                 title="AI Assistant Hub"
-                subtitle="Intelligent agents helping with facility management workflows"
+                subtitle="Intelligent agents helping with project management workflows"
               >
                 <template #action>
                   <button
@@ -311,7 +311,7 @@
                 <AiInboxCard :items="aiQueue" />
                 <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                   <SectionHeader
-                    title="Facility Management Agents"
+                    title="Project Management Agents"
                     subtitle="AI-powered assistance for maintenance, billing, and operations"
                   />
                   <div class="space-y-4">
@@ -401,7 +401,7 @@ const cx = (...classes) => classes.filter(Boolean).join(" ")
 
 const navItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { id: "facilities", label: "Facilities", icon: Building2 },
+  { id: "projects", label: "Projects", icon: Building2 },
   { id: "maintenance", label: "Maintenance", icon: Wrench },
   { id: "billing", label: "Billing", icon: FileText },
   { id: "scheduling", label: "Scheduling", icon: CalendarDays },
@@ -430,7 +430,7 @@ const recruitingStages = [
 const leads = [
   {
     id: "LD-2041",
-    name: "Montgomery County Facilities",
+    name: "Montgomery County Projects",
     contact: "R. Turner",
     email: "rturner@montgomery.example",
     stage: "proposal",
@@ -496,7 +496,7 @@ const leads = [
 
 const crmRecords = [
   {
-    org: "Montgomery County Facilities",
+    org: "Montgomery County Projects",
     contact: "Rebecca Turner",
     title: "Procurement Lead",
     status: "Active Opportunity",
@@ -507,7 +507,7 @@ const crmRecords = [
   {
     org: "Eastgate Medical Plaza",
     contact: "Angela Collins",
-    title: "Facilities Director",
+    title: "Projects Director",
     status: "PM Expansion",
     region: "DC",
     owner: "Project Coordinator",
@@ -545,7 +545,7 @@ const workOrders = [
   },
   {
     id: "HC23-2896",
-    client: "Montgomery County Facilities",
+    client: "Montgomery County Projects",
     category: "Preventive Maintenance",
     status: "Awaiting Review",
     urgency: "Standard",
@@ -659,7 +659,7 @@ const maintenanceHistory = [
   { id: "WO-2024-0453", title: "Roof Leak Repair", facility: "Retail Center", completed: "1 week ago", cost: "$1,150", technician: "Lisa Chen" },
 ]
 
-const facilities = [
+const projects = [
   { id: "FAC-001", name: "Downtown Office Complex", address: "123 Main St, Downtown", status: "Active", type: "Office", sqFt: "50,000", tenants: 12, lastInspection: "2 weeks ago" },
   { id: "FAC-002", name: "Medical Plaza", address: "456 Health Ave, Medical District", status: "Active", type: "Medical", sqFt: "75,000", tenants: 8, lastInspection: "1 week ago" },
   { id: "FAC-003", name: "Warehouse A", address: "789 Industrial Blvd", status: "Maintenance", type: "Warehouse", sqFt: "100,000", tenants: 2, lastInspection: "3 days ago" },
@@ -1055,43 +1055,43 @@ const MaintenanceHistoryCard = defineComponent({
   `,
 })
 
-const FacilitiesGrid = defineComponent({
-  name: "FacilitiesGrid",
+const ProjectsGrid = defineComponent({
+  name: "ProjectsGrid",
   components: { SectionHeader, Building2, MapPin },
-  props: { facilities: { type: Array, required: true } },
+  props: { projects: { type: Array, required: true } },
   template: `
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-      <div v-for="facility in facilities" :key="facility.id" class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div v-for="project in projects" :key="project.id" class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
         <div class="flex items-start justify-between gap-3">
           <div class="flex items-start gap-3">
             <Building2 class="mt-1 h-5 w-5 text-slate-400" />
             <div>
-              <p class="text-sm font-semibold text-slate-950">{{ facility.name }}</p>
+              <p class="text-sm font-semibold text-slate-950">{{ project.name }}</p>
               <p class="mt-1 text-xs text-slate-500 flex items-center gap-1">
-                <MapPin class="h-3 w-3" />{{ facility.address }}
+                <MapPin class="h-3 w-3" />{{ project.address }}
               </p>
             </div>
           </div>
-          <span :class="facility.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'" class="rounded-full px-2.5 py-1 text-xs font-medium">
-            {{ facility.status }}
+          <span :class="project.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'" class="rounded-full px-2.5 py-1 text-xs font-medium">
+            {{ project.status }}
           </span>
         </div>
         <div class="mt-4 grid grid-cols-2 gap-4 text-sm">
           <div>
             <p class="text-slate-500">Type</p>
-            <p class="font-medium text-slate-900">{{ facility.type }}</p>
+            <p class="font-medium text-slate-900">{{ project.type }}</p>
           </div>
           <div>
             <p class="text-slate-500">Sq Ft</p>
-            <p class="font-medium text-slate-900">{{ facility.sqFt }}</p>
+            <p class="font-medium text-slate-900">{{ project.sqFt }}</p>
           </div>
           <div>
             <p class="text-slate-500">Tenants</p>
-            <p class="font-medium text-slate-900">{{ facility.tenants }}</p>
+            <p class="font-medium text-slate-900">{{ project.tenants }}</p>
           </div>
           <div>
             <p class="text-slate-500">Last Inspection</p>
-            <p class="font-medium text-slate-900">{{ facility.lastInspection }}</p>
+            <p class="font-medium text-slate-900">{{ project.lastInspection }}</p>
           </div>
         </div>
       </div>
