@@ -379,7 +379,7 @@
                   </button>
                 </template>
               </SectionHeader>
-              <ProjectsGrid :projects="projects" />
+              <ProjectsGrid :projects="projects" @update-project="updateProject" @update-subtask="updateSubtask" @delete-subtask="deleteSubtask" />
             </div>
           </template>
 
@@ -974,6 +974,34 @@ const createNewProject = () => {
   activeView.value = 'projects'
 }
 
+const updateProject = (updatedProject) => {
+  const index = projects.value.findIndex(p => p.id === updatedProject.id)
+  if (index !== -1) {
+    projects.value[index] = { ...updatedProject }
+  }
+}
+
+const updateSubtask = (subtaskData) => {
+  const project = projects.value.find(p => p.id === subtaskData.projectId)
+  if (project) {
+    const existingIndex = project.subtasks.findIndex(s => s.id === subtaskData.subtask.id)
+    if (existingIndex !== -1) {
+      // Update existing subtask
+      project.subtasks[existingIndex] = { ...subtaskData.subtask }
+    } else {
+      // Add new subtask
+      project.subtasks.push({ ...subtaskData.subtask })
+    }
+  }
+}
+
+const deleteSubtask = ({ projectId, subtaskId }) => {
+  const project = projects.value.find(p => p.id === projectId)
+  if (project) {
+    project.subtasks = project.subtasks.filter(s => s.id !== subtaskId)
+  }
+}
+
 const invoices = [
   { id: "INV-2024-001", tenant: "TechCorp Inc", project: "Downtown Office", amount: "$12,500", dueDate: "2024-04-15", status: "Paid", issued: "2024-03-15" },
   { id: "INV-2024-002", tenant: "MediCare Plus", project: "Medical Plaza", amount: "$8,750", dueDate: "2024-04-20", status: "Pending", issued: "2024-03-20" },
@@ -1367,7 +1395,8 @@ const ProjectsGrid = defineComponent({
   name: "ProjectsGrid",
   components: { SectionHeader, Building2, MapPin, Plus, Edit3, Check, X, ChevronDown, ChevronRight },
   props: { projects: { type: Array, required: true } },
-  setup(props) {
+  emits: ['update-project', 'update-subtask', 'delete-subtask'],
+  setup(props, { emit }) {
     const editingProject = ref(null)
     const showSubtasks = ref({})
     const editingSubtask = ref(null)
@@ -1382,10 +1411,7 @@ const ProjectsGrid = defineComponent({
     }
 
     const saveProject = () => {
-      const index = props.projects.findIndex(p => p.id === editingProject.value.id)
-      if (index !== -1) {
-        props.projects[index] = { ...editingProject.value }
-      }
+      emit('update-project', editingProject.value)
       editingProject.value = null
     }
 
@@ -1413,7 +1439,7 @@ const ProjectsGrid = defineComponent({
           status: "Pending",
           date: new Date().toISOString().split('T')[0]
         }
-        project.subtasks.push(newSubtaskData)
+        emit('update-subtask', { projectId, subtask: newSubtaskData })
         editingSubtask.value = { projectId, subtask: newSubtaskData }
       }
     }
@@ -1423,13 +1449,7 @@ const ProjectsGrid = defineComponent({
     }
 
     const saveSubtask = () => {
-      const project = props.projects.find(p => p.id === editingSubtask.value.projectId)
-      if (project) {
-        const index = project.subtasks.findIndex(s => s.id === editingSubtask.value.subtask.id)
-        if (index !== -1) {
-          project.subtasks[index] = { ...editingSubtask.value.subtask }
-        }
-      }
+      emit('update-subtask', editingSubtask.value)
       editingSubtask.value = null
     }
 
@@ -1438,10 +1458,7 @@ const ProjectsGrid = defineComponent({
     }
 
     const deleteSubtask = (projectId, subtaskId) => {
-      const project = props.projects.find(p => p.id === projectId)
-      if (project) {
-        project.subtasks = project.subtasks.filter(s => s.id !== subtaskId)
-      }
+      emit('delete-subtask', { projectId, subtaskId })
     }
 
     return {
