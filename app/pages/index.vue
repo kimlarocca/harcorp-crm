@@ -31,7 +31,7 @@
             @click="createNewProject"
             class="flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-950 shadow-sm transition hover:-translate-y-0.5"
           >
-            <Plus class="h-4 w-4" /> New Project
+            <Plus class="h-4 w-4" /> New Record
           </button>
         </div>
 
@@ -178,7 +178,7 @@
                         @click="createNewProject"
                         class="rounded-2xl bg-slate-950 px-4 py-2 text-sm font-medium text-white"
                       >
-                        Add Project
+                        New Record
                       </button>
                     </template>
                   </SectionHeader>
@@ -577,6 +577,8 @@ import {
   ChevronLeft,
   X,
   Wand2,
+  Edit3,
+  ChevronDown,
 } from "lucide-vue-next"
 
 const cx = (...classes) => classes.filter(Boolean).join(" ")
@@ -850,7 +852,7 @@ const maintenanceHistory = [
 
 const projects = ref([
   { 
-    id: "FAC-001", 
+    id: "PROJ-001", 
     name: "Downtown Office Complex", 
     address: "123 Main St, Downtown", 
     status: "Active", 
@@ -861,13 +863,19 @@ const projects = ref([
     date: "2024-01-15",
     website: "https://downtownoffice.com",
     cost: "$2,500,000",
-    contactName: "John Smith",
+    contact: "John Smith",
     contactNumber: "(555) 123-4567",
     contactEmail: "john@techcorp.com",
-    source: "Direct"
+    contactTitle: "Property Manager",
+    companyWebsite: "https://techcorp.com",
+    source: "Direct",
+    industry: "Technology",
+    bidAmount: "$2,500,000",
+    nextStep: "Contract signing",
+    subtasks: []
   },
   { 
-    id: "FAC-002", 
+    id: "PROJ-002", 
     name: "Medical Plaza", 
     address: "456 Health Ave, Medical District", 
     status: "Active", 
@@ -878,13 +886,19 @@ const projects = ref([
     date: "2024-02-20",
     website: "https://medicalplaza.com",
     cost: "$4,200,000",
-    contactName: "Dr. Sarah Johnson",
+    contact: "Dr. Sarah Johnson",
     contactNumber: "(555) 234-5678",
     contactEmail: "sarah@medicare.com",
-    source: "Referral"
+    contactTitle: "Chief of Staff",
+    companyWebsite: "https://medicare.com",
+    source: "Referral",
+    industry: "Healthcare",
+    bidAmount: "$4,200,000",
+    nextStep: "Site inspection",
+    subtasks: []
   },
   { 
-    id: "FAC-003", 
+    id: "PROJ-003", 
     name: "Warehouse A", 
     address: "789 Industrial Blvd", 
     status: "Maintenance", 
@@ -895,13 +909,19 @@ const projects = ref([
     date: "2024-03-10",
     website: "https://warehouse-a.com",
     cost: "$1,800,000",
-    contactName: "Mike Davis",
+    contact: "Mike Davis",
     contactNumber: "(555) 345-6789",
     contactEmail: "mike@logistics.com",
-    source: "Online"
+    contactTitle: "Operations Director",
+    companyWebsite: "https://logistics.com",
+    source: "Online",
+    industry: "Logistics",
+    bidAmount: "$1,800,000",
+    nextStep: "Maintenance scheduling",
+    subtasks: []
   },
   { 
-    id: "FAC-004", 
+    id: "PROJ-004", 
     name: "Retail Center", 
     address: "321 Shopping Mall Dr", 
     status: "Active", 
@@ -912,10 +932,16 @@ const projects = ref([
     date: "2024-04-05",
     website: "https://retailcenter.com",
     cost: "$3,100,000",
-    contactName: "Lisa Chen",
+    contact: "Lisa Chen",
     contactNumber: "(555) 456-7890",
     contactEmail: "lisa@retail.com",
-    source: "Partnership"
+    contactTitle: "General Manager",
+    companyWebsite: "https://retailgroup.com",
+    source: "Partnership",
+    industry: "Retail",
+    bidAmount: "$3,100,000",
+    nextStep: "Tenant negotiations",
+    subtasks: []
   },
 ])
 
@@ -924,7 +950,7 @@ const createNewProject = () => {
   const newProject = {
     id: newId,
     name: `New Project ${projects.value.length + 1}`,
-    address: "Address TBD",
+    address: "",
     status: "Active",
     type: "Office",
     sqFt: "0",
@@ -933,10 +959,16 @@ const createNewProject = () => {
     date: new Date().toISOString().split('T')[0], // Today's date in YYYY-MM-DD format
     website: "",
     cost: "$0",
-    contactName: "",
+    contact: "",
     contactNumber: "",
     contactEmail: "",
-    source: "Direct"
+    contactTitle: "",
+    companyWebsite: "",
+    source: "Direct",
+    industry: "",
+    bidAmount: "$0",
+    nextStep: "",
+    subtasks: []
   }
   projects.value.push(newProject)
   activeView.value = 'projects'
@@ -1333,63 +1365,340 @@ const MaintenanceHistoryCard = defineComponent({
 
 const ProjectsGrid = defineComponent({
   name: "ProjectsGrid",
-  components: { SectionHeader, Building2, MapPin },
+  components: { SectionHeader, Building2, MapPin, Plus, Edit3, Check, X, ChevronDown, ChevronRight },
   props: { projects: { type: Array, required: true } },
+  setup(props) {
+    const editingProject = ref(null)
+    const showSubtasks = ref({})
+    const editingSubtask = ref(null)
+    const newSubtask = ref(false)
+
+    const toggleSubtasks = (projectId) => {
+      showSubtasks.value[projectId] = !showSubtasks.value[projectId]
+    }
+
+    const startEditing = (project) => {
+      editingProject.value = { ...project }
+    }
+
+    const saveProject = () => {
+      const index = props.projects.findIndex(p => p.id === editingProject.value.id)
+      if (index !== -1) {
+        props.projects[index] = { ...editingProject.value }
+      }
+      editingProject.value = null
+    }
+
+    const cancelEdit = () => {
+      editingProject.value = null
+    }
+
+    const addSubtask = (projectId) => {
+      const project = props.projects.find(p => p.id === projectId)
+      if (project) {
+        const subtaskId = `SUB-${projectId}-${String(project.subtasks.length + 1).padStart(3, '0')}`
+        const newSubtaskData = {
+          id: subtaskId,
+          name: `New Subtask ${project.subtasks.length + 1}`,
+          contact: "",
+          contactNumber: "",
+          contactEmail: "",
+          contactTitle: "",
+          companyWebsite: "",
+          address: "",
+          source: "",
+          industry: "",
+          bidAmount: "$0",
+          nextStep: "",
+          status: "Pending",
+          date: new Date().toISOString().split('T')[0]
+        }
+        project.subtasks.push(newSubtaskData)
+        editingSubtask.value = { projectId, subtask: newSubtaskData }
+      }
+    }
+
+    const editSubtask = (projectId, subtask) => {
+      editingSubtask.value = { projectId, subtask: { ...subtask } }
+    }
+
+    const saveSubtask = () => {
+      const project = props.projects.find(p => p.id === editingSubtask.value.projectId)
+      if (project) {
+        const index = project.subtasks.findIndex(s => s.id === editingSubtask.value.subtask.id)
+        if (index !== -1) {
+          project.subtasks[index] = { ...editingSubtask.value.subtask }
+        }
+      }
+      editingSubtask.value = null
+    }
+
+    const cancelSubtaskEdit = () => {
+      editingSubtask.value = null
+    }
+
+    const deleteSubtask = (projectId, subtaskId) => {
+      const project = props.projects.find(p => p.id === projectId)
+      if (project) {
+        project.subtasks = project.subtasks.filter(s => s.id !== subtaskId)
+      }
+    }
+
+    return {
+      editingProject,
+      showSubtasks,
+      editingSubtask,
+      newSubtask,
+      toggleSubtasks,
+      startEditing,
+      saveProject,
+      cancelEdit,
+      addSubtask,
+      editSubtask,
+      saveSubtask,
+      cancelSubtaskEdit,
+      deleteSubtask
+    }
+  },
   template: `
-    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-      <div v-for="project in projects" :key="project.id" class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div class="flex items-start justify-between gap-3">
-          <div class="flex items-start gap-3">
-            <Building2 class="mt-1 h-5 w-5 text-slate-400" />
+    <div class="space-y-6">
+      <!-- Edit Project Modal -->
+      <div v-if="editingProject" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div class="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-xl">
+          <div class="mb-6 flex items-center justify-between">
+            <h2 class="text-xl font-semibold text-slate-950">Edit Project</h2>
+            <button @click="cancelEdit" class="rounded-full p-2 hover:bg-slate-100">
+              <X class="h-5 w-5" />
+            </button>
+          </div>
+          <div class="grid gap-4 md:grid-cols-2">
             <div>
-              <p class="text-sm font-semibold text-slate-950">{{ project.name }}</p>
-              <p class="mt-1 text-xs text-slate-500 flex items-center gap-1">
-                <MapPin class="h-3 w-3" />{{ project.address }}
-              </p>
+              <label class="block text-sm font-medium text-slate-700">Project Name</label>
+              <input v-model="editingProject.name" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">Contact</label>
+              <input v-model="editingProject.contact" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">Contact Number</label>
+              <input v-model="editingProject.contactNumber" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">Contact Email</label>
+              <input v-model="editingProject.contactEmail" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">Contact Title</label>
+              <input v-model="editingProject.contactTitle" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">Company Website</label>
+              <input v-model="editingProject.companyWebsite" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" />
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-slate-700">Address</label>
+              <input v-model="editingProject.address" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">Source</label>
+              <input v-model="editingProject.source" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">Industry</label>
+              <input v-model="editingProject.industry" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">Bid Amount</label>
+              <input v-model="editingProject.bidAmount" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">Next Step</label>
+              <input v-model="editingProject.nextStep" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" />
             </div>
           </div>
-          <span :class="project.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'" class="rounded-full px-2.5 py-1 text-xs font-medium">
-            {{ project.status }}
-          </span>
-        </div>
-        <div class="mt-4 grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <p class="text-slate-500">Type</p>
-            <p class="font-medium text-slate-900">{{ project.type }}</p>
-          </div>
-          <div>
-            <p class="text-slate-500">Sq Ft</p>
-            <p class="font-medium text-slate-900">{{ project.sqFt }}</p>
-          </div>
-          <div>
-            <p class="text-slate-500">Cost</p>
-            <p class="font-medium text-slate-900">{{ project.cost }}</p>
-          </div>
-          <div>
-            <p class="text-slate-500">Date</p>
-            <p class="font-medium text-slate-900">{{ project.date }}</p>
-          </div>
-          <div>
-            <p class="text-slate-500">Contact</p>
-            <p class="font-medium text-slate-900">{{ project.contactName }}</p>
-          </div>
-          <div>
-            <p class="text-slate-500">Source</p>
-            <p class="font-medium text-slate-900">{{ project.source }}</p>
+          <div class="mt-6 flex justify-end gap-3">
+            <button @click="cancelEdit" class="rounded-lg border border-slate-300 px-4 py-2 text-slate-700 hover:bg-slate-50">
+              Cancel
+            </button>
+            <button @click="saveProject" class="rounded-lg bg-slate-950 px-4 py-2 text-white hover:bg-slate-900">
+              Save Changes
+            </button>
           </div>
         </div>
-        <div class="mt-4 space-y-2 text-xs">
-          <div v-if="project.website" class="flex items-center gap-2">
-            <span class="text-slate-500">Website:</span>
-            <a :href="project.website" target="_blank" class="text-blue-600 hover:text-blue-800">{{ project.website }}</a>
+      </div>
+
+      <!-- Edit Subtask Modal -->
+      <div v-if="editingSubtask" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div class="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-xl">
+          <div class="mb-6 flex items-center justify-between">
+            <h2 class="text-xl font-semibold text-slate-950">Edit Subtask</h2>
+            <button @click="cancelSubtaskEdit" class="rounded-full p-2 hover:bg-slate-100">
+              <X class="h-5 w-5" />
+            </button>
           </div>
-          <div v-if="project.contactEmail" class="flex items-center gap-2">
-            <span class="text-slate-500">Email:</span>
-            <a :href="'mailto:' + project.contactEmail" class="text-blue-600 hover:text-blue-800">{{ project.contactEmail }}</a>
+          <div class="grid gap-4 md:grid-cols-2">
+            <div>
+              <label class="block text-sm font-medium text-slate-700">Subtask Name</label>
+              <input v-model="editingSubtask.subtask.name" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">Contact</label>
+              <input v-model="editingSubtask.subtask.contact" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">Contact Number</label>
+              <input v-model="editingSubtask.subtask.contactNumber" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">Contact Email</label>
+              <input v-model="editingSubtask.subtask.contactEmail" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">Contact Title</label>
+              <input v-model="editingSubtask.subtask.contactTitle" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">Company Website</label>
+              <input v-model="editingSubtask.subtask.companyWebsite" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" />
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-slate-700">Address</label>
+              <input v-model="editingSubtask.subtask.address" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">Source</label>
+              <input v-model="editingSubtask.subtask.source" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">Industry</label>
+              <input v-model="editingSubtask.subtask.industry" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">Bid Amount</label>
+              <input v-model="editingSubtask.subtask.bidAmount" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">Next Step</label>
+              <input v-model="editingSubtask.subtask.nextStep" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" />
+            </div>
           </div>
-          <div v-if="project.contactNumber" class="flex items-center gap-2">
-            <span class="text-slate-500">Phone:</span>
-            <a :href="'tel:' + project.contactNumber" class="text-blue-600 hover:text-blue-800">{{ project.contactNumber }}</a>
+          <div class="mt-6 flex justify-end gap-3">
+            <button @click="cancelSubtaskEdit" class="rounded-lg border border-slate-300 px-4 py-2 text-slate-700 hover:bg-slate-50">
+              Cancel
+            </button>
+            <button @click="saveSubtask" class="rounded-lg bg-slate-950 px-4 py-2 text-white hover:bg-slate-900">
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Projects Grid -->
+      <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <div v-for="project in projects" :key="project.id" class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div class="flex items-start justify-between gap-3 mb-4">
+            <div class="flex items-start gap-3">
+              <Building2 class="mt-1 h-5 w-5 text-slate-400" />
+              <div>
+                <p class="text-sm font-semibold text-slate-950">{{ project.name }}</p>
+                <p class="mt-1 text-xs text-slate-500 flex items-center gap-1">
+                  <MapPin class="h-3 w-3" />{{ project.address || 'No address' }}
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button @click="startEditing(project)" class="rounded-full p-1 hover:bg-slate-100">
+                <Edit3 class="h-4 w-4 text-slate-400" />
+              </button>
+              <span :class="project.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'" class="rounded-full px-2.5 py-1 text-xs font-medium">
+                {{ project.status }}
+              </span>
+            </div>
+          </div>
+
+          <div class="space-y-3 text-sm">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <p class="text-slate-500">Contact</p>
+                <p class="font-medium text-slate-900">{{ project.contact || 'Not set' }}</p>
+              </div>
+              <div>
+                <p class="text-slate-500">Contact Title</p>
+                <p class="font-medium text-slate-900">{{ project.contactTitle || 'Not set' }}</p>
+              </div>
+              <div>
+                <p class="text-slate-500">Industry</p>
+                <p class="font-medium text-slate-900">{{ project.industry || 'Not set' }}</p>
+              </div>
+              <div>
+                <p class="text-slate-500">Bid Amount</p>
+                <p class="font-medium text-slate-900">{{ project.bidAmount || '$0' }}</p>
+              </div>
+              <div>
+                <p class="text-slate-500">Source</p>
+                <p class="font-medium text-slate-900">{{ project.source || 'Not set' }}</p>
+              </div>
+              <div>
+                <p class="text-slate-500">Next Step</p>
+                <p class="font-medium text-slate-900">{{ project.nextStep || 'Not set' }}</p>
+              </div>
+            </div>
+
+            <div class="space-y-2 text-xs">
+              <div v-if="project.contactEmail" class="flex items-center gap-2">
+                <span class="text-slate-500">Email:</span>
+                <a :href="'mailto:' + project.contactEmail" class="text-blue-600 hover:text-blue-800">{{ project.contactEmail }}</a>
+              </div>
+              <div v-if="project.contactNumber" class="flex items-center gap-2">
+                <span class="text-slate-500">Phone:</span>
+                <a :href="'tel:' + project.contactNumber" class="text-blue-600 hover:text-blue-800">{{ project.contactNumber }}</a>
+              </div>
+              <div v-if="project.companyWebsite" class="flex items-center gap-2">
+                <span class="text-slate-500">Company:</span>
+                <a :href="project.companyWebsite" target="_blank" class="text-blue-600 hover:text-blue-800">{{ project.companyWebsite }}</a>
+              </div>
+            </div>
+
+            <!-- Subtasks Section -->
+            <div class="border-t border-slate-100 pt-3">
+              <div class="flex items-center justify-between mb-2">
+                <button @click="toggleSubtasks(project.id)" class="flex items-center gap-1 text-sm font-medium text-slate-700 hover:text-slate-900">
+                  <ChevronDown v-if="showSubtasks[project.id]" class="h-4 w-4" />
+                  <ChevronRight v-else class="h-4 w-4" />
+                  Subtasks ({{ project.subtasks.length }})
+                </button>
+                <button @click="addSubtask(project.id)" class="flex items-center gap-1 rounded-lg bg-slate-100 px-2 py-1 text-xs hover:bg-slate-200">
+                  <Plus class="h-3 w-3" /> Add
+                </button>
+              </div>
+
+              <div v-if="showSubtasks[project.id]" class="space-y-2">
+                <div v-for="subtask in project.subtasks" :key="subtask.id" class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="flex-1">
+                      <p class="text-sm font-medium text-slate-900">{{ subtask.name }}</p>
+                      <div class="mt-1 space-y-1 text-xs text-slate-600">
+                        <p v-if="subtask.contact">Contact: {{ subtask.contact }}</p>
+                        <p v-if="subtask.nextStep">Next: {{ subtask.nextStep }}</p>
+                        <p v-if="subtask.bidAmount">Bid: {{ subtask.bidAmount }}</p>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <button @click="editSubtask(project.id, subtask)" class="rounded p-1 hover:bg-slate-200">
+                        <Edit3 class="h-3 w-3 text-slate-400" />
+                      </button>
+                      <button @click="deleteSubtask(project.id, subtask.id)" class="rounded p-1 hover:bg-red-100">
+                        <X class="h-3 w-3 text-red-400" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <p v-if="project.subtasks.length === 0" class="text-xs text-slate-500 italic">
+                  No subtasks yet. Click "Add" to create one.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
