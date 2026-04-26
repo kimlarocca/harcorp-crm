@@ -372,7 +372,7 @@
               >
                 <template #action>
                   <button
-                    @click="intakeOpen = true"
+                    @click="createNewProject"
                     class="rounded-2xl bg-slate-950 px-4 py-2 text-sm font-medium text-white"
                   >
                     Add Project
