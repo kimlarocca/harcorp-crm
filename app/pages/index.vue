@@ -381,6 +381,7 @@
               </SectionHeader>
               <ProjectsGrid :projects="projects" />
             </div>
+            <ProjectCRMForm v-if="projectFormOpen" />
           </template>
 
           <template v-else-if="activeView === 'maintenance'">
@@ -919,27 +920,64 @@ const projects = ref([
   },
 ])
 
-const createNewProject = () => {
-  const newId = `PROJ-${String(projects.value.length + 1).padStart(3, '0')}`
+const submitProjectForm = () => {
+  if (!projectFormData.value.name || !projectFormData.value.address) {
+    alert('Please fill in Name and Address')
+    return
+  }
+
+  const newId = `FAC-${String(projects.value.length + 1).padStart(3, '0')}`
   const newProject = {
     id: newId,
-    name: `New Project ${projects.value.length + 1}`,
-    address: "Address TBD",
+    name: projectFormData.value.name,
+    address: projectFormData.value.address,
     status: "Active",
     type: "Office",
-    sqFt: "0",
+    sqFt: "",
     tenants: 0,
     lastInspection: "Never",
-    date: new Date().toISOString().split('T')[0], // Today's date in YYYY-MM-DD format
+    date: new Date().toISOString().split('T')[0],
     website: "",
     cost: "$0",
-    contactName: "",
-    contactNumber: "",
-    contactEmail: "",
-    source: "Direct"
+    contactName: projectFormData.value.name,
+    contactNumber: projectFormData.value.phone,
+    contactEmail: projectFormData.value.email,
+    source: "Direct",
+    customFields: projectFormData.value.customFields
   }
   projects.value.push(newProject)
+  resetProjectForm()
+  projectFormOpen.value = false
   activeView.value = 'projects'
+}
+
+const addCustomField = () => {
+  if (newCustomField.value.fieldName.trim()) {
+    projectFormData.value.customFields.push({
+      name: newCustomField.value.fieldName,
+      value: newCustomField.value.fieldValue
+    })
+    newCustomField.value = { fieldName: "", fieldValue: "" }
+  }
+}
+
+const removeCustomField = (index) => {
+  projectFormData.value.customFields.splice(index, 1)
+}
+
+const resetProjectForm = () => {
+  projectFormData.value = {
+    name: "",
+    address: "",
+    phone: "",
+    email: "",
+    customFields: []
+  }
+  newCustomField.value = { fieldName: "", fieldValue: "" }
+}
+
+const createNewProject = () => {
+  projectFormOpen.value = true
 }
 
 const invoices = [
@@ -1084,6 +1122,17 @@ const activeView = ref("dashboard")
 const intakeOpen = ref(false)
 const intakePath = ref("service")
 const intakeSummary = ref("")
+
+// Project CRM Form State
+const projectFormOpen = ref(false)
+const projectFormData = ref({
+  name: "",
+  address: "",
+  phone: "",
+  email: "",
+  customFields: []
+})
+const newCustomField = ref({ fieldName: "", fieldValue: "" })
 
 const activeNav = computed(
   () => navItems.find((item) => item.id === activeView.value) || navItems[0]
@@ -1391,6 +1440,161 @@ const ProjectsGrid = defineComponent({
             <span class="text-slate-500">Phone:</span>
             <a :href="'tel:' + project.contactNumber" class="text-blue-600 hover:text-blue-800">{{ project.contactNumber }}</a>
           </div>
+        </div>
+      </div>
+    </div>
+  `,
+})
+
+const ProjectCRMForm = defineComponent({
+  name: "ProjectCRMForm",
+  components: { X, Plus },
+  setup(props, { emit }) {
+    return {
+      projectFormOpen,
+      projectFormData,
+      newCustomField,
+      addCustomField,
+      removeCustomField,
+      submitProjectForm,
+      resetProjectForm
+    }
+  },
+  template: `
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div class="w-full max-w-2xl rounded-3xl bg-white shadow-xl">
+        <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+          <h2 class="text-lg font-semibold text-slate-950">Create New Project</h2>
+          <button
+            @click="() => { projectFormOpen = false; resetProjectForm() }"
+            class="rounded-lg p-1 hover:bg-slate-100"
+          >
+            <X class="h-5 w-5 text-slate-500" />
+          </button>
+        </div>
+
+        <div class="max-h-[70vh] overflow-y-auto px-6 py-6">
+          <form @submit.prevent="submitProjectForm" class="space-y-5">
+            <!-- Required Fields -->
+            <div class="space-y-4">
+              <h3 class="text-sm font-semibold text-slate-900">Core Information</h3>
+              
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Project Name *</label>
+                <input
+                  v-model="projectFormData.name"
+                  type="text"
+                  placeholder="Enter project name"
+                  class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-slate-400 focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Address *</label>
+                <input
+                  v-model="projectFormData.address"
+                  type="text"
+                  placeholder="Enter project address"
+                  class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-slate-400 focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Phone</label>
+                  <input
+                    v-model="projectFormData.phone"
+                    type="tel"
+                    placeholder="Enter phone number"
+                    class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-slate-400 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                  <input
+                    v-model="projectFormData.email"
+                    type="email"
+                    placeholder="Enter email address"
+                    class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-slate-400 focus:outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Custom Fields -->
+            <div class="space-y-4">
+              <h3 class="text-sm font-semibold text-slate-900">Custom Fields</h3>
+              
+              <!-- Existing Custom Fields -->
+              <div v-if="projectFormData.customFields.length > 0" class="space-y-3">
+                <div
+                  v-for="(field, index) in projectFormData.customFields"
+                  :key="index"
+                  class="flex items-end gap-2"
+                >
+                  <div class="flex-1">
+                    <p class="text-xs font-medium text-slate-600">{{ field.name }}</p>
+                    <p class="text-sm text-slate-900">{{ field.value }}</p>
+                  </div>
+                  <button
+                    type="button"
+                    @click="removeCustomField(index)"
+                    class="rounded-lg bg-red-50 px-2 py-2 text-red-600 hover:bg-red-100"
+                  >
+                    <X class="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+
+              <!-- Add New Custom Field -->
+              <div class="space-y-2 rounded-lg border border-slate-200 p-4">
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Field Name</label>
+                    <input
+                      v-model="newCustomField.fieldName"
+                      type="text"
+                      placeholder="e.g., Manager, Budget"
+                      class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-slate-400 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Field Value</label>
+                    <input
+                      v-model="newCustomField.fieldValue"
+                      type="text"
+                      placeholder="Enter value"
+                      class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-slate-400 focus:outline-none"
+                    />
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  @click="addCustomField"
+                  class="inline-flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-2 text-sm font-medium text-slate-900 hover:bg-slate-200"
+                >
+                  <Plus class="h-4 w-4" /> Add Field
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="flex gap-3 border-t border-slate-200 px-6 py-4">
+          <button
+            @click="() => { projectFormOpen = false; resetProjectForm() }"
+            class="flex-1 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          >
+            Cancel
+          </button>
+          <button
+            @click="submitProjectForm"
+            class="flex-1 rounded-lg bg-slate-950 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+          >
+            Create Project
+          </button>
         </div>
       </div>
     </div>
